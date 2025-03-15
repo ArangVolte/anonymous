@@ -1,0 +1,3 @@
+pyrogram
+tgcryto
+sqlite3

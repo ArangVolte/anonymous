@@ -1,0 +1,8 @@
+{
+	"start_message": "Hello! Welcome to Anonymous Chat Bot.\n\nUse /next to start an anonymous chat.",
+	"next_message": "Waiting for a chat partner...",
+	"stop_message": "You have stopped the conversation.",
+	"partner_stop_message": "Your chat partner has stopped the conversation.",
+	"no_chat_message": "You have not started a chat. Use /next to start.",
+	"error_message": "An error occurred. You cannot send messages to yourself."
+}

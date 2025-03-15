@@ -1,0 +1,8 @@
+{
+	"start_message": "Halo! Selamat datang di Anonim Chat Bot.\n\nGunakan /next untuk memulai percakapan anonim.",
+	"next_message": "Menunggu pasangan chat...",
+	"stop_message": "Anda menghentikan percakapan.",
+	"partner_stop_message": "Lawan bicara Anda menghentikan percakapan.",
+	"no_chat_message": "Anda belum memulai chat. Gunakan /next untuk memulai.",
+	"error_message": "Terjadi kesalahan. Anda tidak dapat mengirim pesan ke diri sendiri."
+}
