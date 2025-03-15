@@ -1,3 +1,4 @@
 pyrogram
 tgcryto
 sqlite3
+python-dotenv

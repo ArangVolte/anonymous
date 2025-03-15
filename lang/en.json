@@ -4,5 +4,6 @@
 	"stop_message": "You have stopped the conversation.",
 	"partner_stop_message": "Your chat partner has stopped the conversation.",
 	"no_chat_message": "You have not started a chat. Use /next to start.",
-	"error_message": "An error occurred. You cannot send messages to yourself."
+	"error_message": "An error occurred. You cannot send messages to yourself.",
+	"block_message": "Failed to send message The chat partner may have left the conversation."
 }

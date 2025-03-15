@@ -4,5 +4,6 @@
 	"stop_message": "Anda menghentikan percakapan.",
 	"partner_stop_message": "Lawan bicara Anda menghentikan percakapan.",
 	"no_chat_message": "Anda belum memulai chat. Gunakan /next untuk memulai.",
-	"error_message": "Terjadi kesalahan. Anda tidak dapat mengirim pesan ke diri sendiri."
+	"error_message": "Terjadi kesalahan. Anda tidak dapat mengirim pesan ke diri sendiri.",
+	"block_message": "Gagal mengirim pesan Mungkin pasangan chat telah meninggalkan percakapan."
 }
