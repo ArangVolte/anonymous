@@ -158,24 +158,24 @@ async def handle_message(client, message: Message):
     if recipient_id is None or recipient_id == user_id:
         await message.reply_text(get_message(user_id, "error_message"))
         return
-
+    reply_id = message.reply_to_message.id -1 or None
     try:
         if message.text:
-            await app.send_message(recipient_id, message.text)
+            await app.send_message(recipient_id, message.text, reply_to_message_id=reply_id)
         elif message.voice:
-            await app.send_voice(recipient_id, message.voice.file_id, caption=message.caption)
+            await app.send_voice(recipient_id, message.voice.file_id, caption=message.caption, reply_to_message_id=reply_id)
         elif message.animation:
-            await app.send_animation(recipient_id, message.animation.file_id, caption=message.caption)
+            await app.send_animation(recipient_id, message.animation.file_id, caption=message.caption, reply_to_message_id=reply_id)
         elif message.audio:
-            await app.send_audio(recipient_id, message.audio.file_id, caption=message.caption)
+            await app.send_audio(recipient_id, message.audio.file_id, caption=message.caption, reply_to_message_id=reply_id)
         elif message.sticker:
-            await app.send_sticker(recipient_id, message.sticker.file_id)
+            await app.send_sticker(recipient_id, message.sticker.file_id, reply_to_message_id=reply_id)
         elif message.photo:
-            await app.send_photo(recipient_id, message.photo.file_id, caption=message.caption)
+            await app.send_photo(recipient_id, message.photo.file_id, caption=message.caption, reply_to_message_id=reply_id)
         elif message.video:
-            await app.send_video(recipient_id, message.video.file_id, caption=message.caption)
+            await app.send_video(recipient_id, message.video.file_id, caption=message.caption, reply_to_message_id=reply_id)
         elif message.document:
-            await app.send_document(recipient_id, message.document.file_id, caption=message.caption)
+            await app.send_document(recipient_id, message.document.file_id, caption=message.caption, reply_to_message_id=reply_id)
 
     except Exception as e:
         print(f"Gagal mengirim pesan/media: {e}")
