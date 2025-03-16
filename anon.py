@@ -106,6 +106,38 @@ async def start_chat(client, message):
 
         await message.reply_text(MESSAGES["next_message"])
         
+# Handler perintah /stop (menghentikan chat)
+@app.on_message(filters.command("stop"))
+async def stop_chat(client, message):
+    user_id = message.from_user.id
+    print(f"Perintah /stop diterima dari {user_id}")
+
+    # Cari sesi chat aktif
+    cursor.execute('''
+    SELECT * FROM chats
+    WHERE (user_id = ? OR user_id_2 = ?) AND active = 1
+    ''', (user_id, user_id))
+    active_chat = cursor.fetchone()
+
+    if active_chat:
+        recipient_id = active_chat[2] if active_chat[1] == user_id else active_chat[1]
+
+        # Beri tahu pengguna bahwa sesi dihentikan
+        await message.reply_text(MESSAGES["stop_message"])
+
+        # Beri tahu penerima bahwa sesi dihentikan
+        try:
+            if recipient_id:
+                await app.send_message(recipient_id, MESSAGES["partner_stop_message"])
+        except Exception as e:
+            print(f"Gagal mengirim pesan ke lawan bicara: {e}")
+
+        # Hentikan sesi chat
+        await stop_chat_session(user_id)
+    else:
+        # Jika tidak ada sesi aktif, beri tahu pengguna
+        await message.reply_text(MESSAGES["no_chat_message"])
+
 # Handler untuk menerima pesan dan media
 @app.on_message(
     filters.text | 
@@ -160,37 +192,6 @@ async def handle_message(client, message: Message):
         print(f"Gagal mengirim pesan/media: {e}")
         await message.reply_text(MESSAGES["block_message"])
         await stop_chat_session(user_id)  # Menghentikan sesi chat jika terjadi kesalahan
-
-# Handler perintah /stop (menghentikan chat)
-@app.on_message(filters.command("stop"))
-async def stop_chat(client, message):
-    user_id = message.from_user.id
-
-    # Cari sesi chat aktif
-    cursor.execute('''
-    SELECT * FROM chats
-    WHERE (user_id = ? OR user_id_2 = ?) AND active = 1
-    ''', (user_id, user_id))
-    active_chat = cursor.fetchone()
-
-    if active_chat:
-        recipient_id = active_chat[2] if active_chat[1] == user_id else active_chat[1]
-
-        # Beri tahu pengguna bahwa sesi dihentikan
-        await message.reply_text(MESSAGES["stop_message"])
-
-        # Beri tahu penerima bahwa sesi dihentikan
-        try:
-            if recipient_id:
-                await app.send_message(recipient_id, MESSAGES["partner_stop_message"])
-        except Exception as e:
-            print(f"Gagal mengirim pesan ke lawan bicara: {e}")
-
-        # Hentikan sesi chat
-        await stop_chat_session(user_id)
-    else:
-        # Jika tidak ada sesi aktif, beri tahu pengguna
-        await message.reply_text(MESSAGES["no_chat_message"])
 
 # Jalankan bot
 if __name__ == '__main__':
