@@ -3,7 +3,7 @@ from os import getenv
 import asyncio
 import sqlite3
 import json
-from pyrogram import filters
+from pyrogram import Client, filters
 from pyrogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton
 
 API_ID = int(getenv("API_ID", "15370078"))
