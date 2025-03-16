@@ -168,7 +168,7 @@ async def handle_message(client, message: Message):
         await message.reply_text(MESSAGES["error_message"])
         return
 
-    reply_id = message.reply_to_message.id or None
+    reply_id = message.reply_to_message.id -1 if message.reply_to_message else None
 
     try:
         if message.text:
