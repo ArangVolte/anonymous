@@ -206,7 +206,7 @@ async def stop_chat(client, message):
     else:
         await message.reply_text(get_message(user_id, "no_chat_message"))
 
-@app.on_message(filters.command("cast") & filters.user("ID_OWNER"))
+@app.on_message(filters.command("cast") & filters.user(ID_OWNER))
 async def broadcast(client, message):
     xx = message.reply_to_message
     if xx:
