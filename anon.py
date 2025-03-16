@@ -4,16 +4,11 @@ import sqlite3
 import json
 from pyrogram import Client, filters
 from pyrogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton
-import logging
-
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
 
 # Konfigurasi API
 API_ID = int(getenv("API_ID", "15370078"))
 API_HASH = getenv("API_HASH", "e5e8756e459f5da3645d35862808cb30")
 BOT_TOKEN = getenv("BOT_TOKEN", "6208650102:AAF6CyhFQk8b-duLd44A67chU_cHXlX9SOQ")
-ID_OWNER = int(getenv("ID_OWNER", "5401639797"))
 
 # Inisialisasi bot
 app = Client("anonim_chatbot", api_id=API_ID, api_hash=API_HASH, bot_token=BOT_TOKEN)
@@ -209,30 +204,6 @@ async def stop_chat(client, message):
         await stop_chat_session(user_id)
     else:
         await message.reply_text(get_message(user_id, "no_chat_message"))
-
-@app.on_message(filters.command("cast") & filters.user(ID_OWNER))
-async def broadcast(client, message):
-    xx = message.reply_to_message
-    if xx:
-        cursor.execute('SELECT user_id FROM users')
-        users = cursor.fetchall()
-
-        success_count = 0
-        fail_count = 0
-
-        for user in users:
-            try:
-                await xx.copy(user[0])
-                success_count += 1
-            except Exception as e:
-                print(f"Gagal mengirim pesan ke {user[0]}: {e}")
-                fail_count += 1
-
-        await message.reply_text(f"Broadcast berhasil dikirim ke {success_count} pengguna. Gagal dikirim ke {fail_count} pengguna.")
-    else:
-    	await message.reply("Gunakan: /cast balas ke pesan")
-    	return
-
 
 # Jalankan bot
 if __name__ == '__main__':
