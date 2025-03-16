@@ -119,8 +119,8 @@ async def start_chat(client, message):
 
        
         first_user_id = available_chat[1]
-        await app.send_message(first_user_id, get_message(first_user_id, "partner_on"))
-        await message.reply_text(get_message(user_id, "partner_on"))
+        await app.send_message(first_user_id, get_message(first_user_id, "patner_on"))
+        await message.reply_text(get_message(user_id, "patner_on"))
         
         print(f"Pengguna {first_user_id} dan {user_id} telah saling bertemu.")
     else:
