@@ -15,7 +15,6 @@ app = Client("anonim_chatbot", api_id=API_ID, api_hash=API_HASH, bot_token=BOT_T
 conn = sqlite3.connect('anonim_chatbot.db', check_same_thread=False)
 cursor = conn.cursor()
 
-
 cursor.execute('''
 CREATE TABLE IF NOT EXISTS users (
     user_id INTEGER PRIMARY KEY,
@@ -34,6 +33,7 @@ CREATE TABLE IF NOT EXISTS chats (
 ''')
 
 conn.commit()
+
 async def stop_chat_session(user_id):
     cursor.execute('''
     UPDATE chats
@@ -67,6 +67,7 @@ async def start(client, message):
     VALUES (?, ?)
     ''', (user_id, username))
     conn.commit()
+
     keyboard = InlineKeyboardMarkup(
         [
             [
@@ -98,7 +99,6 @@ async def handle_callback(client, callback_query):
         await callback_query.answer(f"Bahasa telah diubah ke {lang}.")
         await callback_query.message.edit_text(get_message(user_id, "start_message"))
 
-
 @app.on_message(filters.command("next"))
 async def start_chat(client, message):
     user_id = message.from_user.id
@@ -117,6 +117,9 @@ async def start_chat(client, message):
         ''', (user_id, available_chat[0]))
         conn.commit()
 
+        # Cetak pesan jika dua pengguna saling bertemu
+        print(f"Pengguna {available_chat[1]} dan {user_id} telah saling bertemu.")
+
         await message.reply_text(get_message(user_id, "next_message"))
     else:
         cursor.execute('''
@@ -127,7 +130,7 @@ async def start_chat(client, message):
 
         await message.reply_text(get_message(user_id, "next_message"))
         
-@app.on_message(filters.animation & filters.document & filters.text & filters.audio & filters.voice & filters.video & filters.photo & filters.sticker & ~filters.command(["start", "next", "stop"]))
+@app.on_message((filters.text | filters.animation | filters.document | filters.audio | filters.voice | filters.video | filters.photo | filters.sticker) & ~filters.command(["start", "next", "stop"]))
 async def handle_message(client, message: Message):
     user_id = message.from_user.id
     cursor.execute('''
@@ -141,7 +144,7 @@ async def handle_message(client, message: Message):
         return
         
     recipient_id = active_chat[2] if active_chat[1] == user_id else active_chat[1]
-    print(recipient_id)
+    print(f"Meneruskan pesan ke pengguna {recipient_id}")
 
     if recipient_id == user_id:
         await message.reply_text(get_message(user_id, "error_message"))
@@ -192,7 +195,6 @@ async def stop_chat(client, message):
     else:
         await message.reply_text(get_message(user_id, "no_chat_message"))
 
-
 if __name__ == '__main__':
     print("Bot sudah aktif")
-    asyncio.run(app.run())
+    app.run()
