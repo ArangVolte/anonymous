@@ -141,22 +141,17 @@ async def start_chat(client, message):
         await message.reply_text(get_message(user_id, "next_message"))
         
 # Handler untuk menerima pesan dan media
-@app.on_message(filters.text &
-    filters.animation & 
-    filters.document & 
-    filters.audio &
-    filters.voice &
-    filters.video & 
-    filters.photo & 
+@app.on_message(
+    filters.text | 
+    filters.animation | 
+    filters.document | 
+    filters.audio |
+    filters.voice |
+    filters.video | 
+    filters.photo | 
     filters.sticker &
-    ~filters.command(
-        [
-            "start",
-            "next",
-            "stop",
-        ]
-    )
- )
+    ~filters.command(["start", "next", "stop"])
+)
 async def handle_message(client, message: Message):
     user_id = message.from_user.id
     cursor.execute('''
@@ -227,4 +222,7 @@ async def stop_chat(client, message):
 # Jalankan bot
 if __name__ == '__main__':
     print("Bot sudah aktif")
-    app.start()
+    try:
+        app.run()
+    except Exception as e:
+        print(f"Bot mengalami error: {e}")
