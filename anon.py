@@ -122,7 +122,7 @@ async def start_chat(client, message):
 
         await message.reply_text(get_message(user_id, "next_message"))
         
-@app.on_message(filters.document & filters.text & filters.audio & filters.voice & filters.video & filters.photo & filters.sticker & ~filters.command(["start", "next", "stop"]))
+@app.on_message(filters.document & filters.text & filters.audio & filters.voice & filters.video & filters.photo & filters.sticker & ~filters.command(["start", "next", "stop", "settings"]))
 async def handle_message(client, message: Message):
     user_id = message.from_user.id
     cursor.execute('''
@@ -183,3 +183,48 @@ async def stop_chat(client, message):
         await stop_chat_session(user_id)
     else:
         await message.reply_text(get_message(user_id, "no_chat_message"))
+
+
+def get_user_status(user_id):
+    cursor.execute("SELECT status FROM users WHERE user_id = ?", (user_id,))
+    result = cursor.fetchone()
+    if result:
+        return result[0]
+    else:
+        cursor.execute("INSERT INTO users (user_id, status) VALUES (?, ?)", (user_id, "off"))
+        conn.commit()
+        return "off"
+
+def update_user_status(user_id, status):
+    cursor.execute("UPDATE users SET status = ? WHERE user_id = ?", (status, user_id))
+    conn.commit()
+
+@app.on_message(filters.command("settings"))
+async def settings(client, message):
+    user_id = message.from_user.id
+    status = get_user_status(user_id)
+
+    keyboard = InlineKeyboardMarkup(
+        [
+            [InlineKeyboardButton(f"Turn {status.capitalize()}", callback_data="toggle")]
+        ]
+    )
+    await message.reply_text(get_message(user_id, "info_media").format(status), reply_markup=keyboard)
+
+@app.on_callback_query()
+def callback_query(client, callback_query):
+    user_id = callback_query.from_user.id
+    status = get_user_status(user_id)
+
+    new_status = "on" if status == "off" else "off"
+    update_user_status(user_id, new_status)
+
+    callback_query.edit_message_text(
+        f"Status saat ini: {new_status}",
+        reply_markup=InlineKeyboardMarkup(
+            [
+                [InlineKeyboardButton(f"Turn {new_status.capitalize()}", callback_data="toggle")]
+            ]
+        )
+    )
+    callback_query.answer(f"Status diubah menjadi {new_status}")
