@@ -117,7 +117,6 @@ async def start_chat(client, message):
         ''', (user_id, available_chat[0]))
         conn.commit()
 
-       
         first_user_id = available_chat[1]
         await app.send_message(first_user_id, get_message(first_user_id, "patner_on"))
         await message.reply_text(get_message(user_id, "patner_on"))
@@ -146,29 +145,30 @@ async def handle_message(client, message: Message):
         return
         
     recipient_id = active_chat[2] if active_chat[1] == user_id else active_chat[1]
-    print(f"Meneruskan pesan ke pengguna {recipient_id}")
 
     if recipient_id == user_id:
         await message.reply_text(get_message(user_id, "error_message"))
         return
 
+    reply_to_id = message.reply_to_message.message_id if message.reply_to_message else None
+
     try:
         if message.text:
-            await app.send_message(recipient_id, message.text)
+            await app.send_message(recipient_id, message.text, reply_to_message_id=reply_to_id)
         elif message.voice:
-            await app.send_voice(recipient_id, message.voice.file_id, caption=message.caption)
+            await app.send_voice(recipient_id, message.voice.file_id, caption=message.caption, reply_to_message_id=reply_to_id)
         elif message.animation:
-            await app.send_animation(recipient_id, message.animation.file_id, caption=message.caption)
+            await app.send_animation(recipient_id, message.animation.file_id, caption=message.caption, reply_to_message_id=reply_to_id)
         elif message.audio:
-            await app.send_audio(recipient_id, message.audio.file_id, caption=message.caption)
+            await app.send_audio(recipient_id, message.audio.file_id, caption=message.caption, reply_to_message_id=reply_to_id)
         elif message.sticker:
-            await app.send_sticker(recipient_id, message.sticker.file_id)
+            await app.send_sticker(recipient_id, message.sticker.file_id, reply_to_message_id=reply_to_id)
         elif message.photo:
-            await app.send_photo(recipient_id, message.photo.file_id, caption=message.caption)
+            await app.send_photo(recipient_id, message.photo.file_id, caption=message.caption, reply_to_message_id=reply_to_id)
         elif message.video:
-            await app.send_video(recipient_id, message.video.file_id, caption=message.caption)
+            await app.send_video(recipient_id, message.video.file_id, caption=message.caption, reply_to_message_id=reply_to_id)
         elif message.document:
-            await app.send_document(recipient_id, message.document.file_id, caption=message.caption)
+            await app.send_document(recipient_id, message.document.file_id, caption=message.caption, reply_to_message_id=reply_to_id)
 
     except Exception as e:
         print(f"Gagal mengirim pesan/media: {e}")
