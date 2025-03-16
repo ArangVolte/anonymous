@@ -209,12 +209,11 @@ async def stop_chat(client, message):
 # Handler perintah /broadcast (mengirim pesan ke semua pengguna)
 @app.on_message(filters.command("cast") & filters.user("ID_OWNER"))  # Ganti YOUR_USER_ID dengan ID Anda
 async def broadcast(client, message):
-	xx = message.reply_to_message
-    if not xx:
+	if not message.reply_to_message:
         await message.reply_text("Gunakan: /cast balas ke pesan")
         return
 
-    
+    xx = message.reply_to_message
     cursor.execute('SELECT user_id FROM users')
     users = cursor.fetchall()
 
