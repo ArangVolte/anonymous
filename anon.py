@@ -141,7 +141,22 @@ async def start_chat(client, message):
         await message.reply_text(get_message(user_id, "next_message"))
         
 # Handler untuk menerima pesan dan media
-@app.on_message(filters.text | filters.animation | filters.document | filters.audio | filters.voice | filters.video | filters.photo | filters.sticker)
+@app.on_message(filters.text &
+    filters.animation & 
+    filters.document & 
+    filters.audio &
+    filters.voice &
+    filters.video & 
+    filters.photo & 
+    filters.sticker &
+    ~filters.command(
+        [
+            "start",
+            "next",
+            "stop",
+        ]
+    )
+ )
 async def handle_message(client, message: Message):
     user_id = message.from_user.id
     cursor.execute('''
@@ -164,12 +179,7 @@ async def handle_message(client, message: Message):
 
     try:
         if message.text:
-            if (
-                message.text != "/start"
-                and message.text != "/stop"
-                and message.text != "/next"
-            ):
-                await app.send_message(recipient_id, message.text, reply_to_message_id=reply_id)
+            await app.send_message(recipient_id, message.text, reply_to_message_id=reply_id)
         elif message.voice:
             await app.send_voice(recipient_id, message.voice.file_id, caption=message.caption, reply_to_message_id=reply_id)
         elif message.animation:
