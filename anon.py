@@ -2,7 +2,7 @@ import os
 from os import getenv
 import sqlite3
 import json
-from pyrogram import Client, filters
+from pyrogram import Client, filters, idle
 from pyrogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton
 
 # Konfigurasi API
