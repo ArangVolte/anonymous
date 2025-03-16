@@ -6,9 +6,9 @@ from pyrogram import Client, filters
 from pyrogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton
 
 # Konfigurasi API
-API_ID = int(getenv("API_ID", "15370078"))
-API_HASH = getenv("API_HASH", "e5e8756e459f5da3645d35862808cb30")
-BOT_TOKEN = getenv("BOT_TOKEN", "6208650102:AAF6CyhFQk8b-duLd44A67chU_cHXlX9SOQ")
+API_ID = int(getenv("API_ID", "15370078"))  # Pastikan untuk mengganti dengan nilai yang aman
+API_HASH = getenv("API_HASH", "e5e8756e459f5da3645d35862808cb30")  # Pastikan untuk mengganti dengan nilai yang aman
+BOT_TOKEN = getenv("BOT_TOKEN", "6208650102:AAF6CyhFQk8b-duLd44A67chU_cHXlX9SOQ")  # Pastikan untuk mengganti dengan nilai yang aman
 
 # Inisialisasi bot
 app = Client("anonim_chatbot", api_id=API_ID, api_hash=API_HASH, bot_token=BOT_TOKEN)
@@ -118,14 +118,15 @@ async def start_chat(client, message):
     available_chat = cursor.fetchone()
 
     if available_chat:
+        chat_id = available_chat[0]
+        first_user_id = available_chat[1]
         cursor.execute('''
         UPDATE chats
         SET user_id_2 = ?, active = 1
         WHERE chat_id = ?
-        ''', (user_id, available_chat[0]))
+        ''', (user_id, chat_id))
         conn.commit()
 
-        first_user_id = available_chat[1]
         await app.send_message(first_user_id, get_message(first_user_id, "patner_on"))
         await message.reply_text(get_message(user_id, "patner_on"))
         
@@ -158,17 +159,17 @@ async def handle_message(client, message: Message):
     if recipient_id is None or recipient_id == user_id:
         await message.reply_text(get_message(user_id, "error_message"))
         return
-    reply_id = message.reply_to_message.id -1 if message.reply_to_message else None
+
+    reply_id = message.reply_to_message.id if message.reply_to_message else None
+
     try:
         if message.text:
-        	if (
+            if (
                 message.text != "/start"
                 and message.text != "/stop"
                 and message.text != "/next"
-                ):
-            	await app.send_message(recipient_id, message.text, reply_to_message_id=reply_id)
-            else:
-            	return
+            ):
+                await app.send_message(recipient_id, message.text, reply_to_message_id=reply_id)
         elif message.voice:
             await app.send_voice(recipient_id, message.voice.file_id, caption=message.caption, reply_to_message_id=reply_id)
         elif message.animation:
@@ -187,6 +188,7 @@ async def handle_message(client, message: Message):
     except Exception as e:
         print(f"Gagal mengirim pesan/media: {e}")
         await message.reply_text(get_message(user_id, "block_message"))
+        await stop_chat_session(user_id)  # Menghentikan sesi chat jika terjadi kesalahan
 
 # Handler perintah /stop (menghentikan chat)
 @app.on_message(filters.command("stop"))
@@ -215,4 +217,5 @@ async def stop_chat(client, message):
 # Jalankan bot
 if __name__ == '__main__':
     print("Bot sudah aktif")
-    app.run()
+    app.start()
+    app.idle()
