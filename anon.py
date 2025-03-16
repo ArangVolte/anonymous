@@ -226,7 +226,8 @@ async def broadcast(client, message):
 
         await message.reply_text(f"Broadcast berhasil dikirim ke {success_count} pengguna. Gagal dikirim ke {fail_count} pengguna.")
     else:
-		return await message.reply_text("Gunakan: /cast balas ke pesan")
+    	await message.reply("Gunakan: /cast balas ke pesan")
+    	return
 
 
 # Jalankan bot
