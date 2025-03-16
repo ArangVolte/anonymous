@@ -206,13 +206,10 @@ async def stop_chat(client, message):
     else:
         await message.reply_text(get_message(user_id, "no_chat_message"))
 
-# Handler perintah /broadcast (mengirim pesan ke semua pengguna)
-@app.on_message(filters.command("cast") & filters.user("ID_OWNER"))  # Ganti YOUR_USER_ID dengan ID Anda
+@app.on_message(filters.command("cast") & filters.user("ID_OWNER"))
 async def broadcast(client, message):
 	if not message.reply_to_message:
-        await message.reply_text("Gunakan: /cast balas ke pesan")
-        return
-
+		return await message.reply_text("Gunakan: /cast balas ke pesan")
     xx = message.reply_to_message
     cursor.execute('SELECT user_id FROM users')
     users = cursor.fetchall()
