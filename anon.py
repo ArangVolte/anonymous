@@ -1,20 +1,23 @@
 import os
 from os import getenv
-import asyncio
 import sqlite3
 import json
 from pyrogram import Client, filters
 from pyrogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton
 
+# Konfigurasi API
 API_ID = int(getenv("API_ID", "15370078"))
-API_HASH = getenv("API_HASH", "e5e8756e459f5da3645d35862808cb30")
-BOT_TOKEN = getenv("BOT_TOKEN", "6208650102:AAF6CyhFQk8b-duLd44A67chU_cHXlX9SOQ")
+API_HASH = getenv("API_HASH", "e5e8756e459f5da3645d35862808cb30"))
+BOT_TOKEN = getenv("BOT_TOKEN", "6208650102:AAF6CyhFQk8b-duLd44A67chU_cHXlX9SOQ"))
 
+# Inisialisasi bot
 app = Client("anonim_chatbot", api_id=API_ID, api_hash=API_HASH, bot_token=BOT_TOKEN)
 
+# Koneksi database
 conn = sqlite3.connect('anonim_chatbot.db', check_same_thread=False)
 cursor = conn.cursor()
 
+# Buat tabel jika belum ada
 cursor.execute('''
 CREATE TABLE IF NOT EXISTS users (
     user_id INTEGER PRIMARY KEY,
@@ -34,6 +37,7 @@ CREATE TABLE IF NOT EXISTS chats (
 
 conn.commit()
 
+# Fungsi untuk menghentikan sesi chat
 async def stop_chat_session(user_id):
     cursor.execute('''
     UPDATE chats
@@ -42,6 +46,7 @@ async def stop_chat_session(user_id):
     ''', (user_id, user_id))
     conn.commit()
 
+# Fungsi untuk mendapatkan pesan berdasarkan bahasa
 def get_message(user_id, key):
     cursor.execute('SELECT language FROM users WHERE user_id = ?', (user_id,))
     user_lang = cursor.fetchone()
@@ -55,6 +60,7 @@ def get_message(user_id, key):
     else:
         return f"File bahasa {lang}.json tidak ditemukan."
 
+# Handler perintah /start
 @app.on_message(filters.command("start"))
 async def start(client, message):
     user_id = message.from_user.id
@@ -82,6 +88,7 @@ async def start(client, message):
         reply_markup=keyboard
     )
 
+# Handler callback query (untuk mengubah bahasa)
 @app.on_callback_query()
 async def handle_callback(client, callback_query):
     user_id = callback_query.from_user.id
@@ -99,6 +106,7 @@ async def handle_callback(client, callback_query):
         await callback_query.answer(f"Bahasa telah diubah ke {lang}.")
         await callback_query.message.edit_text(get_message(user_id, "start_message"))
 
+# Handler perintah /next (mencari pasangan chat)
 @app.on_message(filters.command("next"))
 async def start_chat(client, message):
     user_id = message.from_user.id
@@ -131,7 +139,8 @@ async def start_chat(client, message):
 
         await message.reply_text(get_message(user_id, "next_message"))
         
-@app.on_message(filters.text & filters.animation & filters.document & filters.audio & filters.voice & filters.video & filters.photo & filters.sticker & ~filters.command(["start", "next", "stop"]))
+# Handler untuk menerima pesan dan media
+@app.on_message(filters.text | filters.animation | filters.document | filters.audio | filters.voice | filters.video | filters.photo | filters.sticker & ~filters.command(["start", "next", "stop"]))
 async def handle_message(client, message: Message):
     user_id = message.from_user.id
     cursor.execute('''
@@ -146,10 +155,10 @@ async def handle_message(client, message: Message):
         
     recipient_id = active_chat[2] if active_chat[1] == user_id else active_chat[1]
 
-    if recipient_id == user_id:
+    if recipient_id is None or recipient_id == user_id:
         await message.reply_text(get_message(user_id, "error_message"))
         return
-    reply_id = message.reply_to_message.id -1 or None
+
     try:
         if message.text:
             await app.send_message(recipient_id, message.text)
@@ -172,6 +181,7 @@ async def handle_message(client, message: Message):
         print(f"Gagal mengirim pesan/media: {e}")
         await message.reply_text(get_message(user_id, "block_message"))
 
+# Handler perintah /stop (menghentikan chat)
 @app.on_message(filters.command("stop"))
 async def stop_chat(client, message):
     user_id = message.from_user.id
@@ -195,6 +205,7 @@ async def stop_chat(client, message):
     else:
         await message.reply_text(get_message(user_id, "no_chat_message"))
 
+# Jalankan bot
 if __name__ == '__main__':
     print("Bot sudah aktif")
     app.run()
