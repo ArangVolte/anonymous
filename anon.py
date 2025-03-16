@@ -141,6 +141,7 @@ async def handle_message(client, message: Message):
         return
         
     recipient_id = active_chat[2] if active_chat[1] == user_id else active_chat[1]
+    print(recipient_id)
 
     if recipient_id == user_id:
         await message.reply_text(get_message(user_id, "error_message"))
