@@ -162,11 +162,11 @@ async def handle_message(client, message: Message):
     try:
         if message.text:
         	if (
-            message.text != "/start"
-            and message.text != "/stop"
-            and message.text != "/next"
-            ):
-                await app.send_message(recipient_id, message.text, reply_to_message_id=reply_id)
+                message.text != "/start"
+                and message.text != "/stop"
+                and message.text != "/next"
+                ):
+            	await app.send_message(recipient_id, message.text, reply_to_message_id=reply_id)
             else:
             	return
         elif message.voice:
