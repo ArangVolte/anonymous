@@ -158,7 +158,7 @@ async def handle_message(client, message: Message):
     if recipient_id is None or recipient_id == user_id:
         await message.reply_text(get_message(user_id, "error_message"))
         return
-    reply_id = message.reply_to_message.from_user.id -1 or None
+    reply_id = message.from_user.id -1 or None
     try:
         if message.text:
             await app.send_message(recipient_id, message.text, reply_to_message_id=reply_id)
