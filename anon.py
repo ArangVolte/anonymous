@@ -2,7 +2,7 @@ import os
 from os import getenv
 import sqlite3
 import json
-from pyrogram import Client, filters, idle
+from pyrogram import Client, filters
 from pyrogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton
 
 # Konfigurasi API
@@ -218,4 +218,3 @@ async def stop_chat(client, message):
 if __name__ == '__main__':
     print("Bot sudah aktif")
     app.start()
-    app.idle()
