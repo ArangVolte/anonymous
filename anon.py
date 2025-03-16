@@ -199,6 +199,8 @@ async def handle_message(client, message: Message):
 @app.on_message(filters.command("stop"))
 async def stop_chat(client, message):
     user_id = message.from_user.id
+
+    # Cari sesi chat aktif
     cursor.execute('''
     SELECT * FROM chats
     WHERE (user_id = ? OR user_id_2 = ?) AND active = 1
@@ -208,17 +210,21 @@ async def stop_chat(client, message):
     if active_chat:
         recipient_id = active_chat[2] if active_chat[1] == user_id else active_chat[1]
 
+        # Beri tahu pengguna bahwa sesi dihentikan
         await message.reply_text(get_message(user_id, "stop_message"))
 
+        # Beri tahu penerima bahwa sesi dihentikan
         try:
-            await app.send_message(recipient_id, get_message(recipient_id, "partner_stop_message"))
+            if recipient_id:
+                await app.send_message(recipient_id, get_message(recipient_id, "partner_stop_message"))
         except Exception as e:
             print(f"Gagal mengirim pesan ke lawan bicara: {e}")
 
+        # Hentikan sesi chat
         await stop_chat_session(user_id)
     else:
+        # Jika tidak ada sesi aktif, beri tahu pengguna
         await message.reply_text(get_message(user_id, "no_chat_message"))
-
 # Jalankan bot
 if __name__ == '__main__':
     print("Bot sudah aktif")
