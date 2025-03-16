@@ -1,11 +1,16 @@
 import os
+from os import getenv
 import asyncio
 import sqlite3
 import json
 from pyrogram import filters
 from pyrogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton
-from main import app
 
+API_ID = int(getenv("API_ID", "15370078"))
+API_HASH = getenv("API_HASH", "e5e8756e459f5da3645d35862808cb30")
+BOT_TOKEN = getenv("BOT_TOKEN", "6208650102:AAF6CyhFQk8b-duLd44A67chU_cHXlX9SOQ")
+
+app = Client("anonim_chatbot", api_id=API_ID, api_hash=API_HASH, bot_token=BOT_TOKEN)
 
 conn = sqlite3.connect('anonim_chatbot.db', check_same_thread=False)
 cursor = conn.cursor()
@@ -122,7 +127,7 @@ async def start_chat(client, message):
 
         await message.reply_text(get_message(user_id, "next_message"))
         
-@app.on_message(filters.document & filters.text & filters.audio & filters.voice & filters.video & filters.photo & filters.sticker & ~filters.command(["start", "next", "stop", "settings"]))
+@app.on_message(filters.animation & filters.document & filters.text & filters.audio & filters.voice & filters.video & filters.photo & filters.sticker & ~filters.command(["start", "next", "stop"]))
 async def handle_message(client, message: Message):
     user_id = message.from_user.id
     cursor.execute('''
@@ -186,3 +191,7 @@ async def stop_chat(client, message):
     else:
         await message.reply_text(get_message(user_id, "no_chat_message"))
 
+
+if __name__ == '__main__':
+    print("Bot sudah aktif")
+    asyncio.run(app.run())
