@@ -208,24 +208,26 @@ async def stop_chat(client, message):
 
 @app.on_message(filters.command("cast") & filters.user("ID_OWNER"))
 async def broadcast(client, message):
-	if not message.reply_to_message:
-		return await message.reply_text("Gunakan: /cast balas ke pesan")
     xx = message.reply_to_message
-    cursor.execute('SELECT user_id FROM users')
-    users = cursor.fetchall()
+    if xx:
+        cursor.execute('SELECT user_id FROM users')
+        users = cursor.fetchall()
 
-    success_count = 0
-    fail_count = 0
+        success_count = 0
+        fail_count = 0
 
-    for user in users:
-        try:
-            await xx.copy(user[0])
-            success_count += 1
-        except Exception as e:
-            print(f"Gagal mengirim pesan ke {user[0]}: {e}")
-            fail_count += 1
+        for user in users:
+            try:
+                await xx.copy(user[0])
+                success_count += 1
+            except Exception as e:
+                print(f"Gagal mengirim pesan ke {user[0]}: {e}")
+                fail_count += 1
 
-    await message.reply_text(f"Broadcast berhasil dikirim ke {success_count} pengguna. Gagal dikirim ke {fail_count} pengguna.")
+        await message.reply_text(f"Broadcast berhasil dikirim ke {success_count} pengguna. Gagal dikirim ke {fail_count} pengguna.")
+    else:
+		return await message.reply_text("Gunakan: /cast balas ke pesan")
+
 
 # Jalankan bot
 if __name__ == '__main__':
