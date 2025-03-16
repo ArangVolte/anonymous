@@ -9,6 +9,7 @@ from pyrogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton
 API_ID = int(getenv("API_ID", "15370078"))
 API_HASH = getenv("API_HASH", "e5e8756e459f5da3645d35862808cb30")
 BOT_TOKEN = getenv("BOT_TOKEN", "6208650102:AAF6CyhFQk8b-duLd44A67chU_cHXlX9SOQ")
+ID_OWNER = int(getenv("ID_OWNER", "5401639797"))
 
 # Inisialisasi bot
 app = Client("anonim_chatbot", api_id=API_ID, api_hash=API_HASH, bot_token=BOT_TOKEN)
@@ -140,7 +141,7 @@ async def start_chat(client, message):
         await message.reply_text(get_message(user_id, "next_message"))
         
 # Handler untuk menerima pesan dan media
-@app.on_message(filters.text | filters.animation | filters.document | filters.audio | filters.voice | filters.video | filters.photo | filters.sticker & ~filters.command(["start", "next", "stop"]))
+@app.on_message(filters.text | filters.animation | filters.document | filters.audio | filters.voice | filters.video | filters.photo | filters.sticker & ~filters.command(["start", "next", "stop", "cast"]))
 async def handle_message(client, message: Message):
     user_id = message.from_user.id
     cursor.execute('''
@@ -204,6 +205,31 @@ async def stop_chat(client, message):
         await stop_chat_session(user_id)
     else:
         await message.reply_text(get_message(user_id, "no_chat_message"))
+
+# Handler perintah /broadcast (mengirim pesan ke semua pengguna)
+@app.on_message(filters.command("cast") & filters.user("ID_OWNER"))  # Ganti YOUR_USER_ID dengan ID Anda
+async def broadcast(client, message):
+	xx = message.reply_to_message
+    if not xx:
+        await message.reply_text("Gunakan: /cast balas ke pesan")
+        return
+
+    
+    cursor.execute('SELECT user_id FROM users')
+    users = cursor.fetchall()
+
+    success_count = 0
+    fail_count = 0
+
+    for user in users:
+        try:
+            await xx.copy(user[0])
+            success_count += 1
+        except Exception as e:
+            print(f"Gagal mengirim pesan ke {user[0]}: {e}")
+            fail_count += 1
+
+    await message.reply_text(f"Broadcast berhasil dikirim ke {success_count} pengguna. Gagal dikirim ke {fail_count} pengguna.")
 
 # Jalankan bot
 if __name__ == '__main__':
