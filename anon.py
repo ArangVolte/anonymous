@@ -117,10 +117,12 @@ async def start_chat(client, message):
         ''', (user_id, available_chat[0]))
         conn.commit()
 
-        # Cetak pesan jika dua pengguna saling bertemu
-        print(f"Pengguna {available_chat[1]} dan {user_id} telah saling bertemu.")
-
-        await message.reply_text(get_message(user_id, "next_message"))
+       
+        first_user_id = available_chat[1]
+        await app.send_message(first_user_id, get_message(first_user_id, "partner_on"))
+        await message.reply_text(get_message(user_id, "partner_on"))
+        
+        print(f"Pengguna {first_user_id} dan {user_id} telah saling bertemu.")
     else:
         cursor.execute('''
         INSERT INTO chats (user_id, active)
