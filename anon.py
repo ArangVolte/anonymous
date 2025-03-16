@@ -131,7 +131,7 @@ async def start_chat(client, message):
 
         await message.reply_text(get_message(user_id, "next_message"))
         
-@app.on_message((filters.text | filters.animation | filters.document | filters.audio | filters.voice | filters.video | filters.photo | filters.sticker) & ~filters.command(["start", "next", "stop"]))
+@app.on_message(filters.text & filters.animation & filters.document & filters.audio & filters.voice & filters.video & filters.photo & filters.sticker & ~filters.command(["start", "next", "stop"]))
 async def handle_message(client, message: Message):
     user_id = message.from_user.id
     cursor.execute('''
