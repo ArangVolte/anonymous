@@ -4,6 +4,10 @@ import sqlite3
 import json
 from pyrogram import Client, filters
 from pyrogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton
+import logging
+
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 # Konfigurasi API
 API_ID = int(getenv("API_ID", "15370078"))
