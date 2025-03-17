@@ -73,10 +73,21 @@ async def start_chat(client, message):
     waiting_partner = db.search(User.partner_id == "waiting")
     if waiting_partner:
         waiting_partner_id = waiting_partner[0]['user_id']
+
+        # Cek apakah user_id sama dengan waiting_partner_id
+        if user_id == waiting_partner_id:
+            # Hapus data pengguna yang sedang menunggu
+            db.remove(User.user_id == user_id)
+            await message.reply_text(MESSAGES["next_message"])
+            # Mulai ulang pencarian lawan
+            db.insert({'user_id': user_id, 'partner_id': "waiting"})
+            await message.reply_text(MESSAGES["next_message"])
+            return
+
+        # Jika tidak sama, lanjutkan dengan menghubungkan kedua pengguna
         db.update({'partner_id': user_id}, User.user_id == waiting_partner_id)
         db.insert({'user_id': user_id, 'partner_id': waiting_partner_id})
-        if user_id == waiting_partner_id:
-    	    return
+        
         await app.send_message(waiting_partner_id, MESSAGES["partner_connected"])
         await message.reply_text(MESSAGES["partner_connected"])
     else:
