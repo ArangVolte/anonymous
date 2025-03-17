@@ -164,7 +164,7 @@ async def handle_message(client, message):
     		x = f"{message.photo.file_id} {message.id}"
     		await client.send_photo(recipient_id, photo="danger.jpg", reply_markup=InlineKeyboardMarkup(
             [
-                [InlineKeyboardButton("Lihat", callback_data=f"lihat {x}")]
+                [InlineKeyboardButton("Lihat", callback_data=f"lihat", x)]
             ]
         ))
     	await message.copy(recipient_id, reply_to_message_id=reply_id)
