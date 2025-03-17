@@ -139,7 +139,7 @@ async def stop_chat(client, message):
         await message.reply_text(MESSAGES["no_chat_message"])
 
 # Handler untuk menerima pesan dan media
-@app.on_message(filters.private & ~filters.command(["next", "stop", " next"]))
+@app.on_message(filters.private & ~filters.command(["next", "stop", "start"]))
 async def handle_message(client, message):
     user_id = message.from_user.id
     cursor.execute('''
@@ -158,36 +158,35 @@ async def handle_message(client, message):
         await message.reply_text(MESSAGES["error_message"])
         return
 
-    reply_id = message.reply_to_message.id -1 if message.reply_to_message else None
+    reply_id = message.reply_to_message.message.id -1 if message.reply_to_message else None
     try:
-    	if message.photo:
-    		x = f"{message.photo.file_id} {message.id}"
-    		markup=InlineKeyboardMarkup(
+        if message.photo:
+            x = f"{message.photo.file_id} {message.message_id}"
+            markup = InlineKeyboardMarkup(
                 [[InlineKeyboardButton("Lihat", callback_data=f"lihat {x}")]])
-            await client.send_photo(recipient_id, photo="danger.jpg", reply_markup=markup)
+            await client.send_photo(recipient_id, photo=message.photo.file_id, reply_markup=markup)
         else:
-    	    await message.copy(recipient_id, reply_to_message_id=reply_id)
+            await message.copy(recipient_id, reply_to_message_id=reply_id)
         
     except Exception as e:
         print(f"Gagal mengirim pesan/media: {e}")
         await message.reply_text(MESSAGES["block_message"])
         await stop_chat_session(user_id)  # Menghentikan sesi chat jika terjadi kesalahan
         
-@app.on_callback_query("lihat")
+@app.on_callback_query(filters.regex(r"^lihat"))
 async def handle_callback(client, callback_query):
-	file = callback_query.data
-	parts = file.split()
-	f = parts[0]
-	mi = parts[1]
-	
-	mid = InputMediaPhoto(f)
-	
-	await client.edit_message_media(
-            chat_id = callback_query.from_user.id,
-            message_id = int(mi),
-            media = mid
-            )
-
+    file = callback_query.data
+    parts = file.split()
+    f = parts[1]
+    mi = parts[2]
+    
+    mid = InputMediaPhoto(f)
+    
+    await client.edit_message_media(
+        chat_id=callback_query.from_user.id,
+        message_id=int(mi),
+        media=mid
+    )
 
 # Jalankan bot
 if __name__ == '__main__':
