@@ -188,7 +188,7 @@ async def handle_callback(client, callback_query):
     if cp is not None:
     	cp=pp.caption
     send = InputMediaPhoto if md == "photo" else InputMediaVideo
-    mid = send(xx, cp)
+    mid = send(xx, caption=cp)
     await app.edit_message_media(
         chat_id=callback_query.from_user.id,
         message_id=callback_query.message.id,
