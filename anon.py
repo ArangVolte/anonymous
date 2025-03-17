@@ -186,9 +186,6 @@ async def handle_callback(client, callback_query):
     pp = await app.get_messages(int(ph), int(ms))
     
     # Pastikan caption tidak None
-    cp = pp.caption if pp.caption else ""
-    print(cp)
-    
     # Pastikan media yang valid
     if pp.photo:
         xx = pp.photo.file_id
@@ -201,7 +198,7 @@ async def handle_callback(client, callback_query):
         return
     
     # Buat media object
-    mid = send(xx, cp)
+    mid = send(xx, caption=pp.caption and pp.caption.html or "")
     
     # Edit message media
     await app.edit_message_media(
