@@ -1,8 +1,13 @@
 from os import getenv
 import asyncio
-from tinydb import TinyDB, Query  # Ganti LevelDB dengan TinyDB
+from tinydb import TinyDB, Query
 from pyrogram import Client, filters
 from pyrogram.types import InputMediaPhoto, InputMediaVideo, InlineKeyboardMarkup, InlineKeyboardButton, BotCommand
+import logging
+
+# Konfigurasi logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 # Konfigurasi API
 API_ID = int(getenv("API_ID", "15370078"))  # Pastikan untuk mengganti dengan nilai yang aman
@@ -11,7 +16,7 @@ BOT_TOKEN = getenv("BOT_TOKEN", "6208650102:AAGClqWpLAO_UWyyNR-sXhzKVboi9sY3Gd8"
 ADMIN = int(getenv("ADMIN", "5401639797"))  # Ganti dengan ID admin Anda
 
 # Inisialisasi TinyDB
-db = TinyDB('./chatbot.json')  # Database disimpan di file JSON
+db = TinyDB('/tmp/tinydb_data.json')  # Simpan di /tmp untuk menghindari masalah disk quota
 User = Query()
 
 # Inisialisasi bot
@@ -131,7 +136,7 @@ async def broadcast(client, message):
             await broadcast_message.copy(user_id)
             success_count += 1
         except Exception as e:
-            print(f"Gagal mengirim pesan ke {user_id}: {e}")
+            logger.error(f"Gagal mengirim pesan ke {user_id}: {e}")
             failed_count += 1
 
     # Kirim laporan broadcast
@@ -170,7 +175,7 @@ async def handle_message(client, message):
         else:
             await message.copy(partner_id, reply_to_message_id=reply_id)
     except Exception as e:
-        print(f"Gagal mengirim pesan/media: {e}")
+        logger.error(f"Gagal mengirim pesan/media: {e}")
         await message.reply_text(MESSAGES["block_message"])
         await stop_chat_session(user_id)
 
@@ -182,7 +187,6 @@ async def handle_callback(client, callback_query):
     ph, ms = call.split("|")
     pp = await app.get_messages(int(ph), int(ms))
     
-    # Pastikan caption tidak None
     # Pastikan media yang valid
     if pp.photo:
         xx = pp.photo.file_id
@@ -204,16 +208,15 @@ async def handle_callback(client, callback_query):
         media=mid
     )
 
-
 if __name__ == '__main__':
-    print("Bot sudah aktif")
+    logger.info("Bot sudah aktif")
     try:
         app.run()
         app.set_bot_commands([
-        BotCommand("start", "Memulai bot"),
-        BotCommand("next", "Mencari pasangan chat"),
-        BotCommand("stop", "Menghentikan chat"),
-        BotCommand("help", "Menampilkan pesan bantuan")
-    ])
+            BotCommand("start", "Memulai bot"),
+            BotCommand("next", "Mencari pasangan chat"),
+            BotCommand("stop", "Menghentikan chat"),
+            BotCommand("help", "Menampilkan pesan bantuan")
+        ])
     except Exception as e:
-        print(f"Bot mengalami error: {e}")
+        logger.error(f"Bot mengalami error: {e}")
