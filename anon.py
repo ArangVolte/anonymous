@@ -161,8 +161,7 @@ async def handle_message(client, message):
     reply_id = message.reply_to_message.id -1 if message.reply_to_message else None
     try:
     	if message.photo:
-    		cp = message.photo.caption or None
-    		x = f"{message.photo.file_id} {message.id} {cp}"
+    		x = f"{message.photo.file_id} {message.id}"
     		await client.send_photo(recipient_id, photo="danger.jpg", reply_markup=InlineKeyboardMarkup(
             [
                 [InlineKeyboardButton("Lihat", callback_data=f"lihat {x}")]
@@ -181,9 +180,8 @@ async def handle_callback(client, callback_query):
 	parts = file.split()
 	f = parts[0]
 	mi = parts[1]
-	cp = ' '.join(parts[2:])
 	
-	mid = InputMediaPhoto(f, caption=cp)
+	mid = InputMediaPhoto(f)
 	
 	await client.edit_message_media(
             chat_id = callback_query.from_user.id,
