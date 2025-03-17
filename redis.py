@@ -196,22 +196,6 @@ async def handle_callback(client, callback_query):
     )
 
 
-@app.on_startup
-async def set_commands(client):
-    await client.set_bot_commands([
-        BotCommand("start", "Memulai bot"),
-        BotCommand("next", "Mencari pasangan chat"),
-        BotCommand("stop", "Menghentikan chat"),
-        BotCommand("help", "Menampilkan pesan bantuan")
-    ])
-
-if __name__ == '__main__':
-    print("Bot sudah aktif")
-    try:
-        app.run()
-    except Exception as e:
-        print(f"Bot mengalami error: {e}")
-        
 
 async def set_commands():
     await app.set_bot_commands([
