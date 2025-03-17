@@ -26,7 +26,10 @@ MESSAGES = {
     "no_chat_message": "Anda belum memulai chat. Gunakan /next untuk memulai.",
     "error_message": "Terjadi kesalahan. Anda tidak dapat mengirim pesan ke diri sendiri.",
     "block_message": "Gagal mengirim pesan. Mungkin pasangan chat telah meninggalkan percakapan.",
-    "help_message": "Daftar perintah yang tersedia:\n/start - Memulai bot\n/next - Mencari pasangan chat\n/stop - Menghentikan chat\n/help - Menampilkan pesan bantuan"
+    "help_message": "Daftar perintah yang tersedia:\n/start - Memulai bot\n/next - Mencari pasangan chat\n/stop - Menghentikan chat\n/help - Menampilkan pesan bantuan",
+    "status_message": "📊 **Status Bot**\n\n👥 **Jumlah Pengguna:** {user_count}",
+    "broadcast_success": "✅ Pesan broadcast telah dikirim ke {success_count} pengguna.",
+    "broadcast_failed": "❌ Gagal mengirim pesan ke {failed_count} pengguna."
 }
 
 # Fungsi untuk menghentikan sesi chat
@@ -91,6 +94,13 @@ async def stop_chat(client, message):
 async def help(client, message):
     await message.reply_text(MESSAGES["help_message"])
 
+# Handler perintah /status (khusus admin)
+@app.on_message(filters.private & filters.command("status") & filters.user(ADMIN))
+async def status(client, message):
+    # Hitung jumlah pengguna
+    user_count = len(db.search(User.user_id.exists()))
+    await message.reply_text(MESSAGES["status_message"].format(user_count=user_count))
+
 # Handler untuk broadcast (hanya admin)
 @app.on_message(filters.private & filters.command("cast") & filters.user(ADMIN))
 async def broadcast(client, message):
@@ -101,17 +111,28 @@ async def broadcast(client, message):
 
     # Ambil semua pengguna dari TinyDB
     all_users = db.search(User.user_id.exists())
+    success_count = 0
+    failed_count = 0
+
+    # Kirim pesan ke semua pengguna
     for user in all_users:
         user_id = user['user_id']
         try:
             await broadcast_message.copy(user_id)
+            success_count += 1
         except Exception as e:
             print(f"Gagal mengirim pesan ke {user_id}: {e}")
+            failed_count += 1
 
-    await message.reply_text("Pesan broadcast telah dikirim.")
+    # Kirim laporan broadcast
+    report_message = (
+        f"{MESSAGES['broadcast_success'].format(success_count=success_count)}\n"
+        f"{MESSAGES['broadcast_failed'].format(failed_count=failed_count)}"
+    )
+    await message.reply_text(report_message)
 
 # Handler untuk menerima pesan dan media
-@app.on_message(filters.private & ~filters.command(["next", "stop", "start", "help", "cast"]))
+@app.on_message(filters.private & ~filters.command(["next", "stop", "start", "help", "cast", "status"]))
 async def handle_message(client, message):
     user_id = str(message.from_user.id)
     user_data = db.search(User.user_id == user_id)
@@ -177,12 +198,12 @@ async def handle_callback(client, callback_query):
 if __name__ == '__main__':
     print("Bot sudah aktif")
     try:
-        app.run()
         app.set_bot_commands = [
             BotCommand("start", "Memulai bot"),
             BotCommand("next", "Mencari pasangan chat"),
             BotCommand("stop", "Menghentikan chat"),
             BotCommand("help", "Menampilkan pesan bantuan")
         ]
+        app.run()
     except Exception as e:
         print(f"Bot mengalami error: {e}")
