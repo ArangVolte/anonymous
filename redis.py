@@ -1,16 +1,16 @@
 from os import getenv
-from tinydb import TinyDB, Query  
+from tinydb import TinyDB, Query  # Ganti LevelDB dengan TinyDB
 from pyrogram import Client, filters
 from pyrogram.types import InputMediaPhoto, InputMediaVideo, InlineKeyboardMarkup, InlineKeyboardButton, BotCommand
 
 # Konfigurasi API
-API_ID = int(getenv("API_ID", "15370078"))  
-API_HASH = getenv("API_HASH", "e5e8756e459f5da3645d35862808cb30")  
-BOT_TOKEN = getenv("BOT_TOKEN", "6208650102:AAGClqWpLAO_UWyyNR-sXhzKVboi9sY3Gd8")  
-ADMIN = int(getenv("ADMIN", "5401639797"))  
+API_ID = int(getenv("API_ID", "15370078"))  # Pastikan untuk mengganti dengan nilai yang aman
+API_HASH = getenv("API_HASH", "e5e8756e459f5da3645d35862808cb30")  # Pastikan untuk mengganti dengan nilai yang aman
+BOT_TOKEN = getenv("BOT_TOKEN", "6208650102:AAGClqWpLAO_UWyyNR-sXhzKVboi9sY3Gd8")  # Pastikan untuk mengganti dengan nilai yang aman
+ADMIN = int(getenv("ADMIN", "5401639797"))  # Ganti dengan ID admin Anda
 
 # Inisialisasi TinyDB
-db = TinyDB('./tinydb_data.json')  
+db = TinyDB('./tinydb_data.json')  # Database disimpan di file JSON
 User = Query()
 
 # Inisialisasi bot
@@ -35,7 +35,7 @@ async def stop_chat_session(user_id):
     if user_data:
         partner_id = user_data[0].get('partner_id')
         db.remove(User.user_id == user_id)
-        if partner_id and partner_id != 'waiting':
+        if partner_id and partner_id != "waiting":
             db.remove(User.user_id == partner_id)
 
 # Handler perintah /start
@@ -46,7 +46,7 @@ async def start(client, message):
 
     await stop_chat_session(user_id)
 
-    db.insert({'user_id': user_id, 'username': username})
+    db.insert({'user_id': user_id, 'username': username, 'partner_id': None})
 
     await message.reply_text(MESSAGES["start_message"])
 
@@ -56,7 +56,8 @@ async def start_chat(client, message):
     user_id = str(message.from_user.id)
     await stop_chat_session(user_id)
 
-    waiting_partner = db.search(User.partner_id == 'waiting')
+    # Cari pasangan yang sedang menunggu
+    waiting_partner = db.search(User.partner_id == "waiting")
     if waiting_partner:
         waiting_partner_id = waiting_partner[0]['user_id']
         db.update({'partner_id': user_id}, User.user_id == waiting_partner_id)
@@ -65,7 +66,7 @@ async def start_chat(client, message):
         await app.send_message(waiting_partner_id, MESSAGES["partner_connected"])
         await message.reply_text(MESSAGES["partner_connected"])
     else:
-        db.insert({'user_id': user_id, 'partner_id': 'waiting'})
+        db.insert({'user_id': user_id, 'partner_id': "waiting"})
         await message.reply_text(MESSAGES["next_message"])
 
 # Handler perintah /stop (menghentikan chat)
@@ -76,7 +77,7 @@ async def stop_chat(client, message):
 
     if user_data:
         partner_id = user_data[0].get('partner_id')
-        if partner_id != 'waiting':
+        if partner_id and partner_id != "waiting":
             await message.reply_text(MESSAGES["stop_message"])
             await app.send_message(partner_id, MESSAGES["partner_stop_message"])
             await stop_chat_session(user_id)
@@ -99,8 +100,7 @@ async def broadcast(client, message):
         return
 
     # Ambil semua pengguna dari TinyDB
-    all_users = db.all()
-    
+    all_users = db.search(User.user_id.exists())
     for user in all_users:
         user_id = user['user_id']
         try:
@@ -114,99 +114,75 @@ async def broadcast(client, message):
 @app.on_message(filters.private & ~filters.command(["next", "stop", "start", "help", "cast"]))
 async def handle_message(client, message):
     user_id = str(message.from_user.id)
-    
     user_data = db.search(User.user_id == user_id)
-    
-    if not user_data or user_data[0].get('partner_id') == 'waiting':
+
+    if not user_data or user_data[0].get('partner_id') == "waiting":
         await message.reply_text(MESSAGES["no_chat_message"])
         return
 
     partner_id = user_data[0].get('partner_id')
-    
-    # Prevent self-messaging.
     if partner_id == user_id:
         await message.reply_text(MESSAGES["error_message"])
         return
-    
-    reply_to_msg = message.reply_to_message.id if message.reply_to_message else None
-    
+    reply_id = message.reply_to_message.id - 1 if message.reply_to_message else None
     try:
         if message.photo or message.video:
             # Kirim media dengan tombol "Lihat"
-            media_content = {
-                'photo': ('https://akcdn.detik.net.id/community/media/visual/2022/11/18/simbol-bahan-kimia-5.jpeg', None),
-                'video': ('<video_url>', None)  # Ganti dengan URL video jika alternatif diperlukan.
-            }
-            
-            media_type = 'photo' if message.photo else 'video'
-            
             await app.send_photo(
                 partner_id,
                 photo="https://akcdn.detik.net.id/community/media/visual/2022/11/18/simbol-bahan-kimia-5.jpeg?w=861",
                 reply_markup=InlineKeyboardMarkup(
                     [[InlineKeyboardButton("Lihat", callback_data=f"lihat {user_id}|{message.id}")]]
                 ),
-                reply_to_message=reply_to_msg
+                reply_to_message_id=reply_id
             )
-            
         else:
-            # Salin pesan ke pasangan.
-            await message.copy(partner_id, reply_to_msg=reply_to_msg)
-
-   except Exception as e:
-       print(f"Gagal mengirim pesan/media: {e}")
-       await message.reply_text(MESSAGES["block_message"])
-       await stop_chat_session(user_id)
+            await message.copy(partner_id, reply_to_message_id=reply_id)
+    except Exception as e:
+        print(f"Gagal mengirim pesan/media: {e}")
+        await message.reply_text(MESSAGES["block_message"])
+        await stop_chat_session(user_id)
 
 # Handler untuk callback query (tombol "Lihat")
 @app.on_callback_query(filters.regex("lihat"))
 async def handle_callback(client, callback_query):
-   data_split = callback_query.data.strip().split(None, 1)
-   
-   if len(data_split) < 2:
-       return
-   
-   call_info = data_split[1]
-   
-   ph_userid, msgid_str = call_info.split("|")
-   
-   try:
-       pp = await app.get_messages(int(ph_userid), int(msgid_str))
+    test = callback_query.data.strip()
+    call = test.split(None, 1)[1]
+    ph, ms = call.split("|")
+    pp = await app.get_messages(int(ph), int(ms))
+    
+    # Pastikan caption tidak None
+    # Pastikan media yang valid
+    if pp.photo:
+        xx = pp.photo.file_id
+        send = InputMediaPhoto
+    elif pp.video:
+        xx = pp.video.file_id
+        send = InputMediaVideo
+    else:
+        await callback_query.answer("Media tidak dikenali", show_alert=True)
+        return
+    
+    # Buat media object
+    mid = send(xx, caption=pp.caption and pp.caption.html or "")
+    
+    # Edit message media
+    await app.edit_message_media(
+        chat_id=callback_query.from_user.id,
+        message_id=callback_query.message.id,
+        media=mid
+    )
 
-       if pp.photo:
-           file_type_identifier = pp.photo.file_unique_id
-           send_media_function = InputMediaPhoto
-           caption_content = pp.caption or ""
-       elif pp.video:
-           file_type_identifier = pp.video.file_unique_id
-           send_media_function = InputMediaVideo
-           caption_content = pp.caption or ""
-       else:
-           await callback_query.answer("Media tidak dikenali.", show_alert=True)
-           return
-
-       mid_media_object_instance = send_media_function(file_type_identifier,
-                                                          caption=caption_content.html) 
-
-       # Edit media pada callback query.
-       await app.edit_message_media(
-           chat_kadal=callback_query.from_user.id,
-           id_pesan=callback_query.message.id,
-           media=mid_media_object_instance
-       )
-   except Exception as e:
-       print(f"Gagal memproses callback: {e}")
-       
 # Jalankan bot
 if __name__ == '__main__':
-   print("Bot sudah aktif")
-   try: 
-       app.set_bot_commands([
-           BotCommand("start", "Memulai bot"),
-           BotCommand("next", "Mencari pasangan chat"),
-           BotCommand("stop", "Menghentikan chat"),
-           BotCommand("help", "Menampilkan pesan bantuan")
-       ])      
-       app.run()
-   except Exception as e: 
-       print(f"Bot mengalami error: {e}")
+    print("Bot sudah aktif")
+    try:
+        app.run()
+        app.set_bot_commands = [
+            BotCommand("start", "Memulai bot"),
+            BotCommand("next", "Mencari pasangan chat"),
+            BotCommand("stop", "Menghentikan chat"),
+            BotCommand("help", "Menampilkan pesan bantuan")
+        ]
+    except Exception as e:
+        print(f"Bot mengalami error: {e}")
