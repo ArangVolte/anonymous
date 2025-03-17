@@ -173,7 +173,7 @@ async def handle_message(client, message):
         await message.reply_text(MESSAGES["block_message"])
         await stop_chat_session(user_id)  # Menghentikan sesi chat jika terjadi kesalahan
         
-@app.on_callback_query(filters.regex(r"^lihat"))
+#@app.on_callback_query(filters.regex(r"^lihat"))
 async def handle_callback(client, callback_query):
     file = callback_query.data
     parts = file.split()
