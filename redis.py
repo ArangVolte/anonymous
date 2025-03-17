@@ -75,7 +75,8 @@ async def start_chat(client, message):
         waiting_partner_id = waiting_partner[0]['user_id']
         db.update({'partner_id': user_id}, User.user_id == waiting_partner_id)
         db.insert({'user_id': user_id, 'partner_id': waiting_partner_id})
-
+        if user_id == waiting_partner_id:
+    	    return
         await app.send_message(waiting_partner_id, MESSAGES["partner_connected"])
         await message.reply_text(MESSAGES["partner_connected"])
     else:
