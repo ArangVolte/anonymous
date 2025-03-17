@@ -1,4 +1,3 @@
-import os
 from os import getenv
 import sqlite3
 from pyrogram import Client, filters
