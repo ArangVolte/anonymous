@@ -11,7 +11,7 @@ BOT_TOKEN = getenv("BOT_TOKEN", "6208650102:AAGClqWpLAO_UWyyNR-sXhzKVboi9sY3Gd8"
 ADMIN = int(getenv("ADMIN", "5401639797"))  # Ganti dengan ID admin Anda
 
 # Inisialisasi TinyDB
-db = TinyDB('./tinydb_data.json')  # Database disimpan di file JSON
+db = TinyDB('./chatbot.json')  # Database disimpan di file JSON
 User = Query()
 
 # Inisialisasi bot
