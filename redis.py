@@ -1,7 +1,6 @@
 from os import getenv
 import asyncio
 from tinydb import TinyDB, Query  # Ganti LevelDB dengan TinyDB
-from pyrogram import idle
 from pyrogram import Client, filters
 from pyrogram.types import InputMediaPhoto, InputMediaVideo, InlineKeyboardMarkup, InlineKeyboardButton, BotCommand
 
