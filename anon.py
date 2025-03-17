@@ -158,7 +158,7 @@ async def handle_message(client, message):
         await message.reply_text(MESSAGES["error_message"])
         return
 
-    reply_id = message.reply_to_message.message.id -1 if message.reply_to_message else None
+    reply_id = message.reply_to_message.id -1 if message.reply_to_message else None
     try:
         if message.photo:
             x = f"{message.photo.file_id} {message.id}"
