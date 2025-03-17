@@ -1,4 +1,4 @@
 pyrogram
 tgcryto
-sqlite3
+tinydb
 python-dotenv
