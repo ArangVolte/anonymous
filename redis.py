@@ -1,4 +1,5 @@
 from os import getenv
+import asyncio
 from tinydb import TinyDB, Query  # Ganti LevelDB dengan TinyDB
 from pyrogram import Client, filters
 from pyrogram.types import InputMediaPhoto, InputMediaVideo, InlineKeyboardMarkup, InlineKeyboardButton, BotCommand
@@ -208,5 +209,25 @@ if __name__ == '__main__':
     print("Bot sudah aktif")
     try:
         app.run()
+    except Exception as e:
+        print(f"Bot mengalami error: {e}")
+        
+
+async def set_commands():
+    await app.set_bot_commands([
+        BotCommand("start", "Memulai bot"),
+        BotCommand("next", "Mencari pasangan chat"),
+        BotCommand("stop", "Menghentikan chat"),
+        BotCommand("help", "Menampilkan pesan bantuan")
+    ])
+
+async def main():
+    await app.start()
+    await set_commands()
+
+if __name__ == '__main__':
+    print("Bot sudah aktif")
+    try:
+        asyncio.run(main())
     except Exception as e:
         print(f"Bot mengalami error: {e}")
