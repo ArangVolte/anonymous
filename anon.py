@@ -187,7 +187,7 @@ async def handle_callback(client, callback_query):
     mid = InputMediaPhoto(xx)
     await app.edit_message_media(
         chat_id=callback_query.from_user.id,
-        message_id=int(ms+1),
+        message_id=callback_query.message.id,
         media=mid
     )
 # Jalankan bot
