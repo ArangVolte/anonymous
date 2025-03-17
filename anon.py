@@ -186,7 +186,7 @@ async def handle_callback(client, callback_query):
     pp = await app.get_messages(int(ph), int(ms))
     
     # Pastikan caption tidak None
-    cp = pp.caption.html if pp.caption else ""
+    cp = pp.caption if pp.caption else ""
     
     # Pastikan media yang valid
     if pp.photo:
