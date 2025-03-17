@@ -178,9 +178,9 @@ async def handle_message(client, message: Message):
 async def handle_callback(client, callback_query):
 	file = callback_query.data
 	parts = file.split()
-    f = parts[0]
-    mi = parts[1]
-    cp = ' '.join(parts[2:])
+	f = parts[0]
+	mi = parts[1]
+	cp = ' '.join(parts[2:])
     mid = InputMediaPhoto(f, caption=cp)
     await client.edit_message_media(
             chat_id = callback_query.from_user.id,
