@@ -187,6 +187,7 @@ async def handle_callback(client, callback_query):
     
     # Pastikan caption tidak None
     cp = pp.caption if pp.caption else ""
+    print(cp)
     
     # Pastikan media yang valid
     if pp.photo:
