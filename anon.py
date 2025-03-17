@@ -174,7 +174,7 @@ async def handle_message(client, message):
         
 @app.on_callback_query(filters.regex("lihat"))
 async def handle_callback(client, callback_query):
-	test = callback_query.data.strip()
+    test = callback_query.data.strip()
     call = test.split(None, 1)[1]
     photo, ms = call.split("|")
     mid = InputMediaPhoto(photo)
@@ -183,7 +183,6 @@ async def handle_callback(client, callback_query):
         message_id=int(ms),
         media=mid
     )
-
 # Jalankan bot
 if __name__ == '__main__':
     print("Bot sudah aktif")
