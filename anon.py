@@ -161,8 +161,9 @@ async def handle_message(client, message):
     reply_id = message.reply_to_message.id -1 if message.reply_to_message else None
     try:
         if message.photo:
+        	jj = ord(message.photo.file_id)
             markup = InlineKeyboardMarkup(
-                [[InlineKeyboardButton("Lihat", callback_data=f"lihat {message.photo.file_id}|{message.id}")]])
+                [[InlineKeyboardButton("Lihat", callback_data=f"lihat {jj}|{message.id}")]])
             await app.send_photo(recipient_id, photo="https://akcdn.detik.net.id/community/media/visual/2022/11/18/simbol-bahan-kimia-5.jpeg?w=861", reply_markup=markup)
         else:
             await message.copy(recipient_id, reply_to_message_id=reply_id)
@@ -177,7 +178,8 @@ async def handle_callback(client, callback_query):
     test = callback_query.data.strip()
     call = test.split(None, 1)[1]
     photo, ms = call.split("|")
-    mid = InputMediaPhoto(photo)
+    pp = chr(photo)
+    mid = InputMediaPhoto(pp)
     await app.edit_message_media(
         chat_id=callback_query.from_user.id,
         message_id=int(ms),
