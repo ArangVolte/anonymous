@@ -7,7 +7,7 @@ from pyrogram.types import InputMediaPhoto, InputMediaVideo, InlineKeyboardMarku
 # Konfigurasi API
 API_ID = int(getenv("API_ID", "15370078"))  # Pastikan untuk mengganti dengan nilai yang aman
 API_HASH = getenv("API_HASH", "e5e8756e459f5da3645d35862808cb30")  # Pastikan untuk mengganti dengan nilai yang aman
-BOT_TOKEN = getenv("BOT_TOKEN", "6208650102:AAF6CyhFQk8b-duLd44A67chU_cHXlX9SOQ")  # Pastikan untuk mengganti dengan nilai yang aman
+BOT_TOKEN = getenv("BOT_TOKEN", "6208650102:AAGClqWpLAO_UWyyNR-sXhzKVboi9sY3Gd8")  # Pastikan untuk mengganti dengan nilai yang aman
 
 # Inisialisasi bot
 app = Client("anonim_chatbot", api_id=API_ID, api_hash=API_HASH, bot_token=BOT_TOKEN)
