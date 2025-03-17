@@ -139,7 +139,7 @@ async def stop_chat(client, message):
         await message.reply_text(MESSAGES["no_chat_message"])
 
 # Handler untuk menerima pesan dan media
-@app.on_message(~filters.command["next", "stop", " next"])
+@app.on_message(~filters.command(["next", "stop", " next"]))
 async def handle_message(client, message: Message):
     user_id = message.from_user.id
     cursor.execute('''
