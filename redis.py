@@ -78,8 +78,6 @@ async def start_chat(client, message):
         if user_id == waiting_partner_id:
             # Hapus data pengguna yang sedang menunggu
             db.remove(User.user_id == user_id)
-            await message.reply_text(MESSAGES["next_message"])
-            # Mulai ulang pencarian lawan
             db.insert({'user_id': user_id, 'partner_id': "waiting"})
             await message.reply_text(MESSAGES["next_message"])
             return
