@@ -161,13 +161,12 @@ async def handle_message(client, message):
     reply_id = message.reply_to_message.id -1 if message.reply_to_message else None
     try:
         if message.photo or message.video:
-        	md = "photo" if message.photo else "video"
         	await app.send_photo(
             recipient_id, 
             photo="https://akcdn.detik.net.id/community/media/visual/2022/11/18/simbol-bahan-kimia-5.jpeg?w=861",
             reply_markup=InlineKeyboardMarkup(
             [[InlineKeyboardButton(
-            	"Lihat", callback_data=f"lihat {user_id}|{message.id}|{md}")]]
+            	"Lihat", callback_data=f"lihat {user_id}|{message.id}")]]
             ))
         else:
             await message.copy(recipient_id, reply_to_message_id=reply_id)
@@ -177,21 +176,38 @@ async def handle_message(client, message):
         await message.reply_text(MESSAGES["block_message"])
         await stop_chat_session(user_id)  # Menghentikan sesi chat jika terjadi kesalahan
         
+from pyrogram.types import InputMediaPhoto, InputMediaVideo
+
 @app.on_callback_query(filters.regex("lihat"))
 async def handle_callback(client, callback_query):
     test = callback_query.data.strip()
     call = test.split(None, 1)[1]
-    ph, ms, md = call.split("|")
+    ph, ms = call.split("|")
     pp = await app.get_messages(int(ph), int(ms))
-    cp=pp.caption and pp.caption.html
-    xx=pp.photo.file_id if pp.photo else pp.video.file_id
-    send = InputMediaPhoto if md == "photo" else InputMediaVideo
+    
+    # Pastikan caption tidak None
+    cp = pp.caption.html if pp.caption else ""
+    
+    # Pastikan media yang valid
+    if pp.photo:
+        xx = pp.photo.file_id
+        send = InputMediaPhoto
+    elif pp.video:
+        xx = pp.video.file_id
+        send = InputMediaVideo
+    else:
+        await callback_query.answer("Media tidak dikenali", show_alert=True)
+        return
+    
+    # Buat media object
     mid = send(xx, cp)
+    
+    # Edit message media
     await app.edit_message_media(
         chat_id=callback_query.from_user.id,
         message_id=callback_query.message.id,
         media=mid
-        )
+    )
         
 # Jalankan bot
 if __name__ == '__main__':
