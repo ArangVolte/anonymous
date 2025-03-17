@@ -73,7 +73,7 @@ async def start(client, message):
     await message.reply_text(MESSAGES["start_message"])
 
 # Handler perintah /next (mencari pasangan chat)
-@app.on_message(filters.command("next"))
+@app.on_message(filters.private & filters.command("next"))
 async def start_chat(client, message):
     user_id = message.from_user.id
     await stop_chat_session(user_id)
@@ -107,7 +107,7 @@ async def start_chat(client, message):
         await message.reply_text(MESSAGES["next_message"])
         
 # Handler perintah /stop (menghentikan chat)
-@app.on_message(filters.command("stop"))
+@app.on_message(filters.private & filters.command("stop"))
 async def stop_chat(client, message):
     user_id = message.from_user.id
     print(f"Perintah /stop diterima dari {user_id}")
@@ -139,7 +139,7 @@ async def stop_chat(client, message):
         await message.reply_text(MESSAGES["no_chat_message"])
 
 # Handler untuk menerima pesan dan media
-@app.on_message(~filters.command(["next", "stop", " next"]))
+@app.on_message(filters.private & ~filters.command(["next", "stop", " next"]))
 async def handle_message(client, message: Message):
     user_id = message.from_user.id
     cursor.execute('''
