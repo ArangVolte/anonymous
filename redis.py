@@ -49,8 +49,14 @@ async def start(client, message):
     user_id = str(message.from_user.id)
     username = message.from_user.username or "Tidak ada username"
 
-    db.insert({'user_id': user_id, 'username': username, 'partner_id': None})
+    # Cek apakah pengguna masih dalam obrolan
+    user_data = db.search(User.user_id == user_id)
+    if user_data and user_data[0].get('partner_id') not in [None, "waiting"]:
+        await message.reply_text("Kamu masih dalam obrolan. Gunakan /stop untuk menghentikan percakapan.")
+        return  # Hentikan eksekusi lebih lanjut jika masih dalam obrolan
 
+    # Jika tidak dalam obrolan, lanjutkan seperti biasa
+    db.insert({'user_id': user_id, 'username': username, 'partner_id': None})
     await message.reply_text(MESSAGES["start_message"])
 
 # Handler perintah /next (mencari pasangan chat)
@@ -58,7 +64,13 @@ async def start(client, message):
 async def start_chat(client, message):
     user_id = str(message.from_user.id)
 
-    # Cari pasangan yang sedang menunggu
+    # Cek apakah pengguna masih dalam obrolan
+    user_data = db.search(User.user_id == user_id)
+    if user_data and user_data[0].get('partner_id') not in [None, "waiting"]:
+        await message.reply_text("Kamu masih dalam obrolan. Gunakan /stop untuk menghentikan percakapan.")
+        return  # Hentikan eksekusi lebih lanjut jika masih dalam obrolan
+
+    # Jika tidak dalam obrolan, lanjutkan seperti biasa
     waiting_partner = db.search(User.partner_id == "waiting")
     if waiting_partner:
         waiting_partner_id = waiting_partner[0]['user_id']
@@ -70,7 +82,7 @@ async def start_chat(client, message):
     else:
         db.insert({'user_id': user_id, 'partner_id': "waiting"})
         await message.reply_text(MESSAGES["next_message"])
-
+        
 # Handler perintah /stop (menghentikan chat)
 @app.on_message(filters.private & filters.command("stop"))
 async def stop_chat(client, message):
