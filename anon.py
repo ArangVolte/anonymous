@@ -185,7 +185,7 @@ async def handle_callback(client, callback_query):
     pp = await app.get_messages(int(ph), int(ms))
     xx=pp.photo.file_id if pp.photo else pp.video.file_id
     cp=None
-    if cp not None:
+    if cp is not None:
     	cp=pp.caption
     send = InputMediaPhoto if md == "photo" else InputMediaVideo
     mid = send(xx, cp)
