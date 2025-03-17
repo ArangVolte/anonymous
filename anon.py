@@ -181,8 +181,10 @@ async def handle_callback(client, callback_query):
 	f = parts[0]
 	mi = parts[1]
 	cp = ' '.join(parts[2:])
-    mid = InputMediaPhoto(f, caption=cp)
-    await client.edit_message_media(
+	
+	mid = InputMediaPhoto(f, caption=cp)
+	
+	await client.edit_message_media(
             chat_id = callback_query.from_user.id,
             message_id = int(mi),
             media = mid
