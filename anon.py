@@ -160,12 +160,34 @@ async def handle_message(client, message: Message):
 
     reply_id = message.reply_to_message.id -1 if message.reply_to_message else None
     try:
+    	if message.photo:
+    		x = f"{message.photo.file_id} {xx.id} {message.photo.caption}"
+    		xx = await client.send_photo(recipient_id, photo="danger.jpg", reply_markup=InlineKeyboardMarkup(
+            [
+                [InlineKeyboardButton("Lihat", callback_data=f"lihat {x}")]
+            ]
+        ))
     	await message.copy(recipient_id, reply_to_message_id=reply_id)
         
     except Exception as e:
         print(f"Gagal mengirim pesan/media: {e}")
         await message.reply_text(MESSAGES["block_message"])
         await stop_chat_session(user_id)  # Menghentikan sesi chat jika terjadi kesalahan
+        
+@app.on_callback_query("lihat")
+async def handle_callback(client, callback_query):
+	file = callback_query.data
+	parts = file.split()
+    f = parts[0]
+    mi = parts[1]
+    cp = ' '.join(parts[2:])
+    mid = InputMediaPhoto(f, caption=cp)
+    await client.edit_message_media(
+            chat_id = callback_query.from_user.id,
+            message_id = int(mi),
+            media = mid
+            )
+
 
 # Jalankan bot
 if __name__ == '__main__':
