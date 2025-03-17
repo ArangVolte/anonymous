@@ -49,8 +49,6 @@ async def start(client, message):
     user_id = str(message.from_user.id)
     username = message.from_user.username or "Tidak ada username"
 
-    await stop_chat_session(user_id)
-
     db.insert({'user_id': user_id, 'username': username, 'partner_id': None})
 
     await message.reply_text(MESSAGES["start_message"])
@@ -59,7 +57,6 @@ async def start(client, message):
 @app.on_message(filters.private & filters.command("next"))
 async def start_chat(client, message):
     user_id = str(message.from_user.id)
-    await stop_chat_session(user_id)
 
     # Cari pasangan yang sedang menunggu
     waiting_partner = db.search(User.partner_id == "waiting")
