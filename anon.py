@@ -2,7 +2,7 @@ import os
 from os import getenv
 import sqlite3
 from pyrogram import Client, filters
-from pyrogram.types import Message
+from pyrogram.types import InputMediaPhoto
 
 # Konfigurasi API
 API_ID = int(getenv("API_ID", "15370078"))  # Pastikan untuk mengganti dengan nilai yang aman
@@ -140,7 +140,7 @@ async def stop_chat(client, message):
 
 # Handler untuk menerima pesan dan media
 @app.on_message(filters.private & ~filters.command(["next", "stop", " next"]))
-async def handle_message(client, message: Message):
+async def handle_message(client, message):
     user_id = message.from_user.id
     cursor.execute('''
     SELECT * FROM chats
@@ -161,8 +161,8 @@ async def handle_message(client, message: Message):
     reply_id = message.reply_to_message.id -1 if message.reply_to_message else None
     try:
     	if message.photo:
-    		x = f"{message.photo.file_id} {xx.id} {message.photo.caption}"
-    		xx = await client.send_photo(recipient_id, photo="danger.jpg", reply_markup=InlineKeyboardMarkup(
+    		x = f"{message.photo.file_id} {message.id} {message.photo.caption}"
+    		await client.send_photo(recipient_id, photo="danger.jpg", reply_markup=InlineKeyboardMarkup(
             [
                 [InlineKeyboardButton("Lihat", callback_data=f"lihat {x}")]
             ]
