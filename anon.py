@@ -162,8 +162,9 @@ async def handle_message(client, message):
     try:
         if message.photo:
         	jj = ord(message.photo.file_id)
-            markup = InlineKeyboardMarkup(
-                [[InlineKeyboardButton("Lihat", callback_data=f"lihat {jj}|{message.id}")]])
+        	markup = InlineKeyboardMarkup(
+            [[InlineKeyboardButton("Lihat", callback_data=f"lihat {jj}|{message_id}")]]
+            )
             await app.send_photo(recipient_id, photo="https://akcdn.detik.net.id/community/media/visual/2022/11/18/simbol-bahan-kimia-5.jpeg?w=861", reply_markup=markup)
         else:
             await message.copy(recipient_id, reply_to_message_id=reply_id)
@@ -192,3 +193,7 @@ if __name__ == '__main__':
         app.run()
     except Exception as e:
         print(f"Bot mengalami error: {e}")
+        
+        
+
+
