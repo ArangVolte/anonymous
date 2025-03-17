@@ -183,7 +183,7 @@ async def handle_callback(client, callback_query):
     ph, ms = call.split("|")
     pp = await app.get_messages(int(ph), int(ms))
     xx=pp.photo.file_id
-    cp=pp.photo.caption or None
+    cp=pp.caption.markdown or None
     mid = InputMediaPhoto(xx, cp)
     await app.edit_message_media(
         chat_id=callback_query.from_user.id,
