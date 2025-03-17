@@ -16,7 +16,7 @@ BOT_TOKEN = getenv("BOT_TOKEN", "6208650102:AAGClqWpLAO_UWyyNR-sXhzKVboi9sY3Gd8"
 ADMIN = int(getenv("ADMIN", "5401639797"))  # Ganti dengan ID admin Anda
 
 # Inisialisasi TinyDB
-db = TinyDB('/tmp/tinydb_data.json')  # Simpan di /tmp untuk menghindari masalah disk quota
+db = TinyDB('/database.json')  # Simpan di /tmp untuk menghindari masalah disk quota
 User = Query()
 
 # Inisialisasi bot
