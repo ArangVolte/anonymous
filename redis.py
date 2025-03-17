@@ -1,39 +1,19 @@
 import os
 from os import getenv
-import sqlite3
+import redis
 from pyrogram import Client, filters
-from pyrogram.types import InputMediaPhoto, InputMediaVideo, InlineKeyboardMarkup, InlineKeyboardButton
+from pyrogram.types import InputMediaPhoto, InputMediaVideo, InlineKeyboardMarkup, InlineKeyboardButton, BotCommand
 
 # Konfigurasi API
 API_ID = int(getenv("API_ID", "15370078"))  # Pastikan untuk mengganti dengan nilai yang aman
 API_HASH = getenv("API_HASH", "e5e8756e459f5da3645d35862808cb30")  # Pastikan untuk mengganti dengan nilai yang aman
 BOT_TOKEN = getenv("BOT_TOKEN", "6208650102:AAGClqWpLAO_UWyyNR-sXhzKVboi9sY3Gd8")  # Pastikan untuk mengganti dengan nilai yang aman
 
+# Inisialisasi Redis
+redis_client = redis.Redis(host='localhost', port=6379, db=0, decode_responses=True)
+
 # Inisialisasi bot
 app = Client("anonim_chatbot", api_id=API_ID, api_hash=API_HASH, bot_token=BOT_TOKEN)
-
-# Koneksi database
-conn = sqlite3.connect('anonim_chatbot.db', check_same_thread=False)
-cursor = conn.cursor()
-
-# Buat tabel jika belum ada
-cursor.execute('''
-CREATE TABLE IF NOT EXISTS users (
-    user_id INTEGER PRIMARY KEY,
-    username TEXT
-)
-''')
-
-cursor.execute('''
-CREATE TABLE IF NOT EXISTS chats (
-    chat_id INTEGER PRIMARY KEY AUTOINCREMENT,
-    user_id INTEGER,
-    user_id_2 INTEGER,
-    active INTEGER DEFAULT 0
-)
-''')
-
-conn.commit()
 
 # Pesan dalam bahasa Indonesia
 MESSAGES = {
@@ -44,17 +24,16 @@ MESSAGES = {
     "partner_stop_message": "Lawan bicara Anda menghentikan percakapan.",
     "no_chat_message": "Anda belum memulai chat. Gunakan /next untuk memulai.",
     "error_message": "Terjadi kesalahan. Anda tidak dapat mengirim pesan ke diri sendiri.",
-    "block_message": "Gagal mengirim pesan. Mungkin pasangan chat telah meninggalkan percakapan."
+    "block_message": "Gagal mengirim pesan. Mungkin pasangan chat telah meninggalkan percakapan.",
+    "help_message": "Daftar perintah yang tersedia:\n/start - Memulai bot\n/next - Mencari pasangan chat\n/stop - Menghentikan chat\n/help - Menampilkan pesan bantuan"
 }
 
 # Fungsi untuk menghentikan sesi chat
 async def stop_chat_session(user_id):
-    cursor.execute('''
-    UPDATE chats
-    SET active = 0
-    WHERE (user_id = ? OR user_id_2 = ?) AND active = 1
-    ''', (user_id, user_id))
-    conn.commit()
+    partner_id = redis_client.get(f"chat:{user_id}")
+    if partner_id:
+        redis_client.delete(f"chat:{user_id}")
+        redis_client.delete(f"chat:{partner_id}")
 
 # Handler perintah /start
 @app.on_message(filters.command("start"))
@@ -64,11 +43,7 @@ async def start(client, message):
 
     await stop_chat_session(user_id)
 
-    cursor.execute('''
-    INSERT OR REPLACE INTO users (user_id, username)
-    VALUES (?, ?)
-    ''', (user_id, username))
-    conn.commit()
+    redis_client.hset(f"user:{user_id}", "username", username)
 
     await message.reply_text(MESSAGES["start_message"])
 
@@ -77,88 +52,72 @@ async def start(client, message):
 async def start_chat(client, message):
     user_id = message.from_user.id
     await stop_chat_session(user_id)
-    cursor.execute('''
-    SELECT * FROM chats
-    WHERE active = 0 AND user_id != ?
-    ''', (user_id,))
-    available_chat = cursor.fetchone()
 
-    if available_chat:
-        chat_id = available_chat[0]
-        first_user_id = available_chat[1]
-        cursor.execute('''
-        UPDATE chats
-        SET user_id_2 = ?, active = 1
-        WHERE chat_id = ?
-        ''', (user_id, chat_id))
-        conn.commit()
+    partner_id = redis_client.randomkey("chat:*")
+    if partner_id:
+        partner_id = partner_id.split(":")[1]
+        redis_client.set(f"chat:{user_id}", partner_id)
+        redis_client.set(f"chat:{partner_id}", user_id)
 
-        await app.send_message(first_user_id, MESSAGES["partner_connected"])
+        await app.send_message(partner_id, MESSAGES["partner_connected"])
         await message.reply_text(MESSAGES["partner_connected"])
-        
-        print(f"Pengguna {first_user_id} dan {user_id} telah saling bertemu.")
     else:
-        cursor.execute('''
-        INSERT INTO chats (user_id, active)
-        VALUES (?, 0)
-        ''', (user_id,))
-        conn.commit()
-
+        redis_client.set(f"chat:{user_id}", "waiting")
         await message.reply_text(MESSAGES["next_message"])
-        
+
 # Handler perintah /stop (menghentikan chat)
 @app.on_message(filters.private & filters.command("stop"))
 async def stop_chat(client, message):
     user_id = message.from_user.id
-    print(f"Perintah /stop diterima dari {user_id}")
+    partner_id = redis_client.get(f"chat:{user_id}")
 
-    # Cari sesi chat aktif
-    cursor.execute('''
-    SELECT * FROM chats
-    WHERE (user_id = ? OR user_id_2 = ?) AND active = 1
-    ''', (user_id, user_id))
-    active_chat = cursor.fetchone()
-
-    if active_chat:
-        recipient_id = active_chat[2] if active_chat[1] == user_id else active_chat[1]
-
-        # Beri tahu pengguna bahwa sesi dihentikan
+    if partner_id and partner_id != "waiting":
         await message.reply_text(MESSAGES["stop_message"])
-
-        # Beri tahu penerima bahwa sesi dihentikan
-        try:
-            if recipient_id:
-                await app.send_message(recipient_id, MESSAGES["partner_stop_message"])
-        except Exception as e:
-            print(f"Gagal mengirim pesan ke lawan bicara: {e}")
-
-        # Hentikan sesi chat
+        await app.send_message(partner_id, MESSAGES["partner_stop_message"])
         await stop_chat_session(user_id)
     else:
-        # Jika tidak ada sesi aktif, beri tahu pengguna
         await message.reply_text(MESSAGES["no_chat_message"])
+
+# Handler perintah /help
+@app.on_message(filters.private & filters.command("help"))
+async def help(client, message):
+    await message.reply_text(MESSAGES["help_message"])
+
+# Handler untuk mengatur perintah bot
+# Handler untuk broadcast
+@app.on_message(filters.private & filters.command("cast") & filters.user(ADMIN))
+async def broadcast(client, message):
+    broadcast_message = message.reply_to_message
+    if not broadcast_message:
+        await message.reply_text("Balas pesan yang ingin Anda broadcast.")
+        return
+
+    all_users = redis_client.keys("user:*")
+    for user_key in all_users:
+        user_id = user_key.split(":")[1]
+        try:
+            await broadcast_message.copy(user_id)
+        except Exception as e:
+            print(f"Gagal mengirim pesan ke {user_id}: {e}")
+
+    await message.reply_text("Pesan broadcast telah dikirim.")
 
 # Handler untuk menerima pesan dan media
-@app.on_message(filters.private & ~filters.command(["next", "stop", "start"]))
+@app.on_message(filters.private & ~filters.command(["next", "stop", "start", "help", "cast"]))
 async def handle_message(client, message):
     user_id = message.from_user.id
-    cursor.execute('''
-    SELECT * FROM chats
-    WHERE (user_id = ? OR user_id_2 = ?) AND active = 1
-    ''', (user_id, user_id))
-    active_chat = cursor.fetchone()
+    partner_id = redis_client.get(f"chat:{user_id}")
 
-    if not active_chat:
+    if not partner_id or partner_id == "waiting":
         await message.reply_text(MESSAGES["no_chat_message"])
         return
-        
-    recipient_id = active_chat[2] if active_chat[1] == user_id else active_chat[1]
 
-    if recipient_id is None or recipient_id == user_id:
+    if partner_id == user_id:
         await message.reply_text(MESSAGES["error_message"])
         return
-
+    
     reply_id = message.reply_to_message.id -1 if message.reply_to_message else None
+    
     try:
         if message.photo or message.video:
         	await app.send_photo(
@@ -170,12 +129,10 @@ async def handle_message(client, message):
             ))
         else:
             await message.copy(recipient_id, reply_to_message_id=reply_id)
-        
     except Exception as e:
         print(f"Gagal mengirim pesan/media: {e}")
         await message.reply_text(MESSAGES["block_message"])
-        await stop_chat_session(user_id)  # Menghentikan sesi chat jika terjadi kesalahan
-        
+        await stop_chat_session(user_id)
 
 @app.on_callback_query(filters.regex("lihat"))
 async def handle_callback(client, callback_query):
@@ -205,15 +162,20 @@ async def handle_callback(client, callback_query):
         message_id=callback_query.message.id,
         media=mid
     )
-        
+    
+    
 # Jalankan bot
 if __name__ == '__main__':
     print("Bot sudah aktif")
     try:
         app.run()
+        app.set_bot_commands = [
+        BotCommand("start", "Memulai bot"),
+        BotCommand("next", "Mencari pasangan chat"),
+        BotCommand("stop", "Menghentikan chat"),
+        BotCommand("help", "Menampilkan pesan bantuan")
+    ]
     except Exception as e:
         print(f"Bot mengalami error: {e}")
-        
-        
 
 
