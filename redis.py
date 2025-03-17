@@ -1,6 +1,7 @@
 from os import getenv
 import asyncio
 from tinydb import TinyDB, Query  # Ganti LevelDB dengan TinyDB
+from pyrogram import idle
 from pyrogram import Client, filters
 from pyrogram.types import InputMediaPhoto, InputMediaVideo, InlineKeyboardMarkup, InlineKeyboardButton, BotCommand
 
@@ -208,6 +209,7 @@ async def set_commands():
 async def main():
     await app.start()
     await set_commands()
+    await app.idle()
 
 if __name__ == '__main__':
     print("Bot sudah aktif")
