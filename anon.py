@@ -265,7 +265,7 @@ async def language_settings(client, callback_query):
             [InlineKeyboardButton("🇬🇧 English", callback_data="lang_en"),
             InlineKeyboardButton("🇮🇩Indonesian", callback_data="lang_id"),
             InlineKeyboardButton("🇮🇹 Italian", callback_data="lang_it")],
-            [InlineKeyboardButton("🇪🇸 Spanish", callback_data="lang_es")
+            [InlineKeyboardButton("🇪🇸Spanish", callback_data="lang_es")
             InlineKeyboardButton("🇹🇷 Turkish", callback_data="lang_tr"),
             InlineKeyboardButton("🇰🇷 Korean", callback_data="lang_ko")],
             [InlineKeyboardButton("← Kembali", callback_data="back_to_main")]
