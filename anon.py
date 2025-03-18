@@ -214,10 +214,10 @@ async def handle_callback(client, callback_query):
 @app.on_message(filters.private & filters.command("settings"))
 async def settings(client, message):
     user_id = message.from_user.id
-    user_data = info_table.get(User.id == user_id)
+    user_data = userdb.get(User.id == user_id)
 
     if not user_data:
-        info_table.insert({'id': user_id, 'kelamin': None, 'usia': None, 'notif': False, 'bahasa': None})
+        userdb.insert({'id': user_id, 'kelamin': None, 'usia': None, 'notif': False, 'bahasa': None})
 
     keyboard = InlineKeyboardMarkup(
         [
@@ -311,22 +311,22 @@ async def callback_query_handler(client, callback_query):
 
     if data.startswith("age_"):
         usia = int(data.split("_")[1])
-        info_table.update({'usia': usia}, User.id == user_id)
+        userdb.update({'usia': usia}, User.id == user_id)
         await callback_query.answer(f"Usia Anda telah diatur menjadi {usia} tahun.")
     elif data in ["male", "female"]:
-        info_table.update({'kelamin': data}, User.id == user_id)
+        userdb.update({'kelamin': data}, User.id == user_id)
         await callback_query.answer(f"Jenis kelamin Anda telah diatur menjadi {data}.")
     elif data == "remove_gender":
-        info_table.update({'kelamin': None}, User.id == user_id)
+        userdb.update({'kelamin': None}, User.id == user_id)
         await callback_query.answer("Jenis kelamin Anda telah dihapus.")
     elif data == "toggle_notif":
-        user_data = info_table.get(User.id == user_id)
+        user_data = userdb.get(User.id == user_id)
         new_status = not user_data['notif']
-        info_table.update({'notif': new_status}, User.id == user_id)
+        userdb.update({'notif': new_status}, User.id == user_id)
         await callback_query.answer(f"Notifikasi telah diubah menjadi {'✅ Aktif' if new_status else '❌ Nonaktif'}.")
     elif data.startswith("lang_"):
         bahasa = data.split("_")[1]
-        info_table.update({'bahasa': bahasa}, User.id == user_id)
+        userdb.update({'bahasa': bahasa}, User.id == user_id)
         await callback_query.answer(f"Bahasa Anda telah diatur menjadi {bahasa}.")
     elif data == "back_to_main":
         await start(client, callback_query.message)
