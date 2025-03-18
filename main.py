@@ -3,7 +3,7 @@ from pyrogram.types import BotCommand
 
 
 if __name__ == '__main__':
-print("Bot sudah aktif")
+    print("Bot sudah aktif")
     try:
         app.start()
         app.set_bot_commands([
