@@ -4,7 +4,7 @@ from pyrogram import Client, filters
 from pyrogram.errors import FloodWait, UserIsBlocked, InputUserDeactivated
 from pyrogram.types import InputMediaPhoto, InputMediaVideo, InlineKeyboardMarkup, InlineKeyboardButton, BotCommand
 from config import ADMIN, MESSAGES, API_ID, API_HASH, BOT_TOKEN
-from data import db, User, user_data, present_user, add_user, full_userbase, del_user, stop_chat_session
+from data import db, User, user_data, present_user, add_user, full_userbase, del_user, stop_chat_session, info_table
 
 
 app = Client("anonim_chatbot", api_id=API_ID, api_hash=API_HASH, bot_token=BOT_TOKEN)
@@ -209,9 +209,16 @@ async def handle_callback(client, callback_query):
         media=mid
     )
 
-# Handler untuk perintah /start
+
+# Handler untuk perintah /settings
 @app.on_message(filters.private & filters.command("settings"))
-async def start(client, message):
+async def settings(client, message):
+    user_id = message.from_user.id
+    user_data = info_table.get(User.id == user_id)
+
+    if not user_data:
+        info_table.insert({'id': user_id, 'kelamin': None, 'usia': None, 'notif': False, 'bahasa': None})
+
     keyboard = InlineKeyboardMarkup(
         [
             [InlineKeyboardButton("👨 Jenis Kelamin ️👩", callback_data="gender")],
@@ -263,7 +270,7 @@ async def language_settings(client, callback_query):
     keyboard = InlineKeyboardMarkup(
         [
             [InlineKeyboardButton("🇬🇧 English", callback_data="lang_en"),
-            InlineKeyboardButton("🇮🇩Indonesian", callback_data="lang_id"),
+            InlineKeyboardButton("🇮🇩 Indonesian", callback_data="lang_id"),
             InlineKeyboardButton("🇮🇹 Italian", callback_data="lang_it")],
             [InlineKeyboardButton("🇪🇸 Spanish", callback_data="lang_es"),
             InlineKeyboardButton("🇹🇷 Turkish", callback_data="lang_tr"),
@@ -285,3 +292,31 @@ async def back_to_main(client, callback_query):
         ]
     )
     await callback_query.edit_message_text("Pilih pengaturan yang ingin Anda ubah:\n\n**Catatan:** Anda hanya akan dicocokkan dengan pengguna yang menggunakan bahasa yang sama.", reply_markup=keyboard)
+
+# Handler untuk callback query
+@app.on_callback_query()
+async def callback_query_handler(client, callback_query):
+    data = callback_query.data
+    user_id = callback_query.from_user.id
+
+    if data.startswith("age_"):
+        usia = int(data.split("_")[1])
+        info_table.update({'usia': usia}, User.id == user_id)
+        await callback_query.answer(f"Usia Anda telah diatur menjadi {usia} tahun.")
+    elif data in ["male", "female"]:
+        info_table.update({'kelamin': data}, User.id == user_id)
+        await callback_query.answer(f"Jenis kelamin Anda telah diatur menjadi {data}.")
+    elif data == "remove_gender":
+        info_table.update({'kelamin': None}, User.id == user_id)
+        await callback_query.answer("Jenis kelamin Anda telah dihapus.")
+    elif data == "toggle_notif":
+        user_data = info_table.get(User.id == user_id)
+        new_status = not user_data['notif']
+        info_table.update({'notif': new_status}, User.id == user_id)
+        await callback_query.answer(f"Notifikasi telah diubah menjadi {'✅ Aktif' if new_status else '❌ Nonaktif'}.")
+    elif data.startswith("lang_"):
+        bahasa = data.split("_")[1]
+        info_table.update({'bahasa': bahasa}, User.id == user_id)
+        await callback_query.answer(f"Bahasa Anda telah diatur menjadi {bahasa}.")
+    elif data == "back_to_main":
+        await start(client, callback_query.message)

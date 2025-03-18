@@ -5,6 +5,7 @@ from tinydb import TinyDB, Query
 db = TinyDB('./tinydb_data.json')  # Database disimpan di file JSON
 User = Query()
 user_data = db.table('cast')
+info_table = db.table('info')
 
 async def present_user(user_id: int):
     found = user_data.contains(User._id == user_id)
