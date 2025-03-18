@@ -48,28 +48,28 @@ async def add_data(user_id, kelamin, usia, notif, bahasa):
     else:
         userdb.insert({"user_id": user_id, "kelamin": kelamin, "usia": usia, "notif": notif, "bahasa": bahasa})
 
-async def kelamin_info(user_id, kelamin):
+async def kelamin_info(user_id):
     r = userdb.get((User.user_id == user_id) & (User.kelamin == kelamin))
     if r:
         return r
     else:
         return "Tidak diketahui"
 
-async def usia_info(user_id, usia):
+async def usia_info(user_id):
     r = userdb.get((User.user_id == user_id) & (User.usia == usia))
     if r:
         return r
     else:
         return "Tidak diketahui"
         
-async def noti_info(user_id, notif):
+async def noti_info(user_id):
     r = userdb.get((User.user_id == user_id) & (User.notif == notif))
     if r:
         return r
     else:
         return "on"
 
-async def bahasa_info(user_id, bahasa):
+async def bahasa_info(user_id):
     r = userdb.get((User.user_id == user_id) & (User.bahasa == bahasa))
     if r:
         return r
