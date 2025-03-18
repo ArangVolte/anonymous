@@ -4,7 +4,7 @@ from pyrogram import Client, filters
 from pyrogram.errors import FloodWait, UserIsBlocked, InputUserDeactivated
 from pyrogram.types import InputMediaPhoto, InputMediaVideo, InlineKeyboardMarkup, InlineKeyboardButton, BotCommand
 from config import ADMIN, MESSAGES, API_ID, API_HASH, BOT_TOKEN
-from data import db, User, user_data, present_user, add_user, full_userbase, del_user, stop_chat_session, info_table
+from data import *
 
 
 app = Client("anonim_chatbot", api_id=API_ID, api_hash=API_HASH, bot_token=BOT_TOKEN)
@@ -233,10 +233,9 @@ async def settings(client, message):
 @app.on_callback_query(filters.regex("^gender$"))
 async def gender_settings(client, callback_query):
     user_id = callback_query.from_user.id
-    user_data = info_table.get(User.id == user_id)
     
     # Ambil data jenis kelamin dari database
-    jenis_kelamin = user_data.get('kelamin')
+    jenis_kelamin = await kelamin_info(user_id)
 
     keyboard = InlineKeyboardMarkup(
         [
