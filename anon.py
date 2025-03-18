@@ -1,181 +1,183 @@
-from os import getenv
-import sqlite3
-from pyrogram import Client, filters
-from pyrogram.types import InputMediaPhoto, InputMediaVideo, InlineKeyboardMarkup, InlineKeyboardButton
+# anon.py
+from pyrogram import filters
+from pyrogram.errors import FloodWait, UserIsBlocked, InputUserDeactivated
+from pyrogram.types import InputMediaPhoto, InputMediaVideo, InlineKeyboardMarkup, InlineKeyboardButton, BotCommand
+from config import ADMIN, MESSAGES
+from data import db, User, user_data, present_user, add_user, full_userbase, del_user, stop_chat_session
+from main import app
+import asyncio
 
-# Konfigurasi API
-API_ID = int(getenv("API_ID", "15370078"))  # Pastikan untuk mengganti dengan nilai yang aman
-API_HASH = getenv("API_HASH", "e5e8756e459f5da3645d35862808cb30")  # Pastikan untuk mengganti dengan nilai yang aman
-BOT_TOKEN = getenv("BOT_TOKEN", "6208650102:AAGClqWpLAO_UWyyNR-sXhzKVboi9sY3Gd8")  # Pastikan untuk mengganti dengan nilai yang aman
-
-# Inisialisasi bot
-app = Client("anonim_chatbot", api_id=API_ID, api_hash=API_HASH, bot_token=BOT_TOKEN)
-
-# Koneksi database
-conn = sqlite3.connect('anonim_chatbot.db', check_same_thread=False)
-cursor = conn.cursor()
-
-# Buat tabel jika belum ada
-cursor.execute('''
-CREATE TABLE IF NOT EXISTS users (
-    user_id INTEGER PRIMARY KEY,
-    username TEXT
-)
-''')
-
-cursor.execute('''
-CREATE TABLE IF NOT EXISTS chats (
-    chat_id INTEGER PRIMARY KEY AUTOINCREMENT,
-    user_id INTEGER,
-    user_id_2 INTEGER,
-    active INTEGER DEFAULT 0
-)
-''')
-
-conn.commit()
-
-# Pesan dalam bahasa Indonesia
-MESSAGES = {
-    "start_message": "Halo! Selamat datang di Anonim Chat Bot.\n\nGunakan /next untuk memulai percakapan anonim.",
-    "next_message": "Menunggu pasangan chat...",
-    "stop_message": "Anda menghentikan percakapan.",
-    "partner_connected": "Kalian sudah saling terhubung",
-    "partner_stop_message": "Lawan bicara Anda menghentikan percakapan.",
-    "no_chat_message": "Anda belum memulai chat. Gunakan /next untuk memulai.",
-    "error_message": "Terjadi kesalahan. Anda tidak dapat mengirim pesan ke diri sendiri.",
-    "block_message": "Gagal mengirim pesan. Mungkin pasangan chat telah meninggalkan percakapan."
-}
-
-# Fungsi untuk menghentikan sesi chat
-async def stop_chat_session(user_id):
-    cursor.execute('''
-    UPDATE chats
-    SET active = 0
-    WHERE (user_id = ? OR user_id_2 = ?) AND active = 1
-    ''', (user_id, user_id))
-    conn.commit()
 
 # Handler perintah /start
 @app.on_message(filters.command("start"))
 async def start(client, message):
-    user_id = message.from_user.id
+    user_id = str(message.from_user.id)
     username = message.from_user.username or "Tidak ada username"
 
-    await stop_chat_session(user_id)
+    if not await present_user(user_id):
+        try:
+            await add_user(user_id)
+        except:
+            pass
+    user_data = db.search(User.user_id == user_id)
+    if user_data and user_data[0].get('partner_id') not in [None, "waiting"]:
+        await message.reply_text("Kamu masih dalam obrolan. Gunakan /stop untuk menghentikan percakapan.")
+        return  # Hentikan eksekusi lebih lanjut jika masih dalam obrolan
 
-    cursor.execute('''
-    INSERT OR REPLACE INTO users (user_id, username)
-    VALUES (?, ?)
-    ''', (user_id, username))
-    conn.commit()
-
+    # Jika tidak dalam obrolan, lanjutkan seperti biasa
+    db.insert({'user_id': user_id, 'username': username, 'partner_id': None})
     await message.reply_text(MESSAGES["start_message"])
 
 # Handler perintah /next (mencari pasangan chat)
 @app.on_message(filters.private & filters.command("next"))
 async def start_chat(client, message):
-    user_id = message.from_user.id
-    await stop_chat_session(user_id)
-    cursor.execute('''
-    SELECT * FROM chats
-    WHERE active = 0 AND user_id != ?
-    ''', (user_id,))
-    available_chat = cursor.fetchone()
+    user_id = str(message.from_user.id)
+    if not await present_user(user_id):
+        try:
+            await add_user(user_id)
+        except:
+            pass
+    # Cek apakah pengguna masih dalam obrolan
+    user_data = db.search(User.user_id == user_id)
+    if user_data and user_data[0].get('partner_id') not in [None, "waiting"]:
+        await message.reply_text("Kamu masih dalam obrolan. Gunakan /stop untuk menghentikan percakapan.")
+        return  # Hentikan eksekusi lebih lanjut jika masih dalam obrolan
 
-    if available_chat:
-        chat_id = available_chat[0]
-        first_user_id = available_chat[1]
-        cursor.execute('''
-        UPDATE chats
-        SET user_id_2 = ?, active = 1
-        WHERE chat_id = ?
-        ''', (user_id, chat_id))
-        conn.commit()
+    # Jika tidak dalam obrolan, lanjutkan seperti biasa
+    waiting_partner = db.search(User.partner_id == "waiting")
+    if waiting_partner:
+        waiting_partner_id = waiting_partner[0]['user_id']
 
-        await app.send_message(first_user_id, MESSAGES["partner_connected"])
-        await message.reply_text(MESSAGES["partner_connected"])
+        # Cek apakah user_id sama dengan waiting_partner_id
+        if user_id == waiting_partner_id:
+            # Hapus data pengguna yang sedang menunggu
+            db.remove(User.user_id == user_id)
+            db.insert({'user_id': user_id, 'partner_id': "waiting"})
+            await message.reply_text(MESSAGES["next_message"])
+            return
+
+        # Jika tidak sama, lanjutkan dengan menghubungkan kedua pengguna
+        db.update({'partner_id': user_id}, User.user_id == waiting_partner_id)
+        db.insert({'user_id': user_id, 'partner_id': waiting_partner_id})
         
-        print(f"Pengguna {first_user_id} dan {user_id} telah saling bertemu.")
+        await app.send_message(waiting_partner_id, MESSAGES["partner_connected"])
+        await message.reply_text(MESSAGES["partner_connected"])
     else:
-        cursor.execute('''
-        INSERT INTO chats (user_id, active)
-        VALUES (?, 0)
-        ''', (user_id,))
-        conn.commit()
-
+        db.insert({'user_id': user_id, 'partner_id': "waiting"})
         await message.reply_text(MESSAGES["next_message"])
         
 # Handler perintah /stop (menghentikan chat)
 @app.on_message(filters.private & filters.command("stop"))
 async def stop_chat(client, message):
-    user_id = message.from_user.id
-    print(f"Perintah /stop diterima dari {user_id}")
+    user_id = str(message.from_user.id)
+    user_data = db.search(User.user_id == user_id)
 
-    # Cari sesi chat aktif
-    cursor.execute('''
-    SELECT * FROM chats
-    WHERE (user_id = ? OR user_id_2 = ?) AND active = 1
-    ''', (user_id, user_id))
-    active_chat = cursor.fetchone()
-
-    if active_chat:
-        recipient_id = active_chat[2] if active_chat[1] == user_id else active_chat[1]
-
-        # Beri tahu pengguna bahwa sesi dihentikan
-        await message.reply_text(MESSAGES["stop_message"])
-
-        # Beri tahu penerima bahwa sesi dihentikan
-        try:
-            if recipient_id:
-                await app.send_message(recipient_id, MESSAGES["partner_stop_message"])
-        except Exception as e:
-            print(f"Gagal mengirim pesan ke lawan bicara: {e}")
-
-        # Hentikan sesi chat
-        await stop_chat_session(user_id)
+    if user_data:
+        partner_id = user_data[0].get('partner_id')
+        if partner_id and partner_id != "waiting":
+            await message.reply_text(MESSAGES["stop_message"])
+            await app.send_message(partner_id, MESSAGES["partner_stop_message"])
+            await stop_chat_session(user_id)
+        else:
+            await message.reply_text(MESSAGES["no_chat_message"])
     else:
-        # Jika tidak ada sesi aktif, beri tahu pengguna
         await message.reply_text(MESSAGES["no_chat_message"])
 
-# Handler untuk menerima pesan dan media
-@app.on_message(filters.private & ~filters.command(["next", "stop", "start"]))
-async def handle_message(client, message):
-    user_id = message.from_user.id
-    cursor.execute('''
-    SELECT * FROM chats
-    WHERE (user_id = ? OR user_id_2 = ?) AND active = 1
-    ''', (user_id, user_id))
-    active_chat = cursor.fetchone()
+# Handler perintah /help
+@app.on_message(filters.private & filters.command("help"))
+async def help(client, message):
+    await message.reply_text(MESSAGES["help_message"])
 
-    if not active_chat:
+# Handler perintah /status (khusus admin)
+@app.on_message(filters.private & filters.command("status") & filters.user(ADMIN))
+async def status(client, message):
+    # Hitung jumlah pengguna
+    _count = await full_userbase()
+    xx = len(_count)
+    await message.reply_text(MESSAGES["status_message"].format(user_count=xx))
+
+# Handler untuk broadcast (hanya admin)
+@app.on_message(filters.private & filters.command("cast") & filters.user(ADMIN))
+async def send_text(client, message):
+    if message.reply_to_message:
+        query = await full_userbase()
+        broadcast_msg = message.reply_to_message
+        total = 0
+        successful = 0
+        blocked = 0
+        deleted = 0
+        unsuccessful = 0
+        
+        pls_wait = await message.reply("<i>Broadcasting Message.. This will Take Some Time</i>")
+        for chat_id in query:
+            try:
+                await broadcast_msg.copy(chat_id)
+                successful += 1
+            except FloodWait as e:
+                await asyncio.sleep(e.x)
+                await broadcast_msg.copy(chat_id)
+                successful += 1
+            except UserIsBlocked:
+                await del_user(chat_id)
+                blocked += 1
+            except InputUserDeactivated:
+                await del_user(chat_id)
+                deleted += 1
+            except:
+                unsuccessful += 1
+                pass
+            total += 1
+        
+        status = f"""<b><u>Broadcast Completed</u>
+
+Total Users: <code>{total}</code>
+Successful: <code>{successful}</code>
+Blocked Users: <code>{blocked}</code>
+Deleted Accounts: <code>{deleted}</code>
+Unsuccessful: <code>{unsuccessful}</code></b>"""
+        
+        return await pls_wait.edit(status)
+
+    else:
+        msg = await message.reply("Silahkan balas ke pesan")
+        await asyncio.sleep(8)
+        await msg.delete()
+        
+        
+# Handler untuk menerima pesan dan media
+@app.on_message(filters.private & ~filters.command(["next", "stop", "start", "help", "cast", "status"]))
+async def handle_message(client, message):
+    user_id = str(message.from_user.id)
+    user_data = db.search(User.user_id == user_id)
+
+    if not user_data or user_data[0].get('partner_id') == "waiting":
         await message.reply_text(MESSAGES["no_chat_message"])
         return
-        
-    recipient_id = active_chat[2] if active_chat[1] == user_id else active_chat[1]
 
-    if recipient_id is None or recipient_id == user_id:
+    partner_id = user_data[0].get('partner_id')
+    if partner_id == user_id:
         await message.reply_text(MESSAGES["error_message"])
         return
-
-    reply_id = message.reply_to_message.id -1 if message.reply_to_message else None
+    reply_id = message.reply_to_message.id - 1 if message.reply_to_message else None
     try:
         if message.photo or message.video:
-        	await app.send_photo(
-            recipient_id, 
-            photo="https://akcdn.detik.net.id/community/media/visual/2022/11/18/simbol-bahan-kimia-5.jpeg?w=861",
-            reply_markup=InlineKeyboardMarkup(
-            [[InlineKeyboardButton(
-            	"Lihat", callback_data=f"lihat {user_id}|{message.id}")]]
-            ))
+            # Kirim media dengan tombol "Lihat"
+            await app.send_photo(
+                partner_id,
+                photo="https://akcdn.detik.net.id/community/media/visual/2022/11/18/simbol-bahan-kimia-5.jpeg?w=861",
+                reply_markup=InlineKeyboardMarkup(
+                    [[InlineKeyboardButton("Lihat", callback_data=f"lihat {user_id}|{message.id}")]]
+                ),
+                reply_to_message_id=reply_id
+            )
         else:
-            await message.copy(recipient_id, reply_to_message_id=reply_id)
-        
+            await message.copy(partner_id, reply_to_message_id=reply_id)
     except Exception as e:
         print(f"Gagal mengirim pesan/media: {e}")
         await message.reply_text(MESSAGES["block_message"])
-        await stop_chat_session(user_id)  # Menghentikan sesi chat jika terjadi kesalahan
-        
+        await stop_chat_session(user_id)
 
+# Handler untuk callback query (tombol "Lihat")
 @app.on_callback_query(filters.regex("lihat"))
 async def handle_callback(client, callback_query):
     test = callback_query.data.strip()
@@ -204,15 +206,3 @@ async def handle_callback(client, callback_query):
         message_id=callback_query.message.id,
         media=mid
     )
-        
-# Jalankan bot
-if __name__ == '__main__':
-    print("Bot sudah aktif")
-    try:
-        app.run()
-    except Exception as e:
-        print(f"Bot mengalami error: {e}")
-        
-        
-
-
