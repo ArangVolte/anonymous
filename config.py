@@ -17,6 +17,6 @@ MESSAGES = {
     "no_chat_message": "Anda belum memulai chat. Gunakan /next untuk memulai.",
     "error_message": "Terjadi kesalahan. Anda tidak dapat mengirim pesan ke diri sendiri.",
     "block_message": "Gagal mengirim pesan. Mungkin pasangan chat telah meninggalkan percakapan.",
-    "help_message": "Daftar perintah yang tersedia:\n/start - Memulai bot\n/next - Mencari pasangan chat\n/stop - Menghentikan chat\n/help - Menampilkan pesan bantuan",
+    "help_message": "Daftar perintah yang tersedia:\n/start - Memulai bot\n/next - Mencari pasangan chat\n/stop - Menghentikan chat\n/help - Menampilkan pesan bantuan\n/settings - Ubah jenis kelamin dan pengaturan lainnya",
     "status_message": "📊 **Status Bot**\n\n👥 **Jumlah Pengguna:** {user_count}",
 }
