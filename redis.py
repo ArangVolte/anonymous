@@ -2,18 +2,20 @@ from os import getenv
 import asyncio
 from tinydb import TinyDB, Query
 from pyrogram import Client, filters
+from pyrogram.errors import FloodWait, UserIsBlocked, InputUserDeactivated
+
 from pyrogram.types import InputMediaPhoto, InputMediaVideo, InlineKeyboardMarkup, InlineKeyboardButton, BotCommand
 
 # Konfigurasi API
 API_ID = int(getenv("API_ID", "15370078"))  # Pastikan untuk mengganti dengan nilai yang aman
 API_HASH = getenv("API_HASH", "e5e8756e459f5da3645d35862808cb30")  # Pastikan untuk mengganti dengan nilai yang aman
-BOT_TOKEN = getenv("BOT_TOKEN", "6208650102:AAGClqWpLAO_UWyyNR-sXhzKVboi9sY3Gd8")  # Pastikan untuk mengganti dengan nilai yang aman
+BOT_TOKEN = getenv("BOT_TOKEN", "6208650102:AAFvqr9dNwj1Pzbuo29K1XWXI46iQMFBS1Q")  # Pastikan untuk mengganti dengan nilai yang aman
 ADMIN = int(getenv("ADMIN", "5401639797"))  # Ganti dengan ID admin Anda
 
 # Inisialisasi TinyDB
 db = TinyDB('./tinydb_data.json')  # Database disimpan di file JSON
 User = Query()
-
+user_data = db.table('cast')
 # Inisialisasi bot
 app = Client("anonim_chatbot", api_id=API_ID, api_hash=API_HASH, bot_token=BOT_TOKEN)
 
@@ -29,9 +31,23 @@ MESSAGES = {
     "block_message": "Gagal mengirim pesan. Mungkin pasangan chat telah meninggalkan percakapan.",
     "help_message": "Daftar perintah yang tersedia:\n/start - Memulai bot\n/next - Mencari pasangan chat\n/stop - Menghentikan chat\n/help - Menampilkan pesan bantuan",
     "status_message": "📊 **Status Bot**\n\n👥 **Jumlah Pengguna:** {user_count}",
-    "broadcast_success": "✅ Pesan broadcast telah dikirim ke {success_count} pengguna.",
-    "broadcast_failed": "❌ Gagal mengirim pesan ke {failed_count} pengguna."
 }
+
+async def present_user(user_id: int):
+    found = user_data.contains(User._id == user_id)
+    return found
+
+async def add_user(user_id: int):
+    user_data.insert({'_id': user_id})
+    return
+
+async def full_userbase():
+    user_ids = [doc['_id'] for doc in user_data.all()]
+    return user_ids
+
+async def del_user(user_id: int):
+    user_data.remove(User._id == user_id)
+    return
 
 # Fungsi untuk menghentikan sesi chat
 async def stop_chat_session(user_id):
@@ -48,7 +64,11 @@ async def start(client, message):
     user_id = str(message.from_user.id)
     username = message.from_user.username or "Tidak ada username"
 
-    # Cek apakah pengguna masih dalam obrolan
+    if not await present_user(user_id):
+        try:
+            await add_user(user_id)
+        except:
+            pass
     user_data = db.search(User.user_id == user_id)
     if user_data and user_data[0].get('partner_id') not in [None, "waiting"]:
         await message.reply_text("Kamu masih dalam obrolan. Gunakan /stop untuk menghentikan percakapan.")
@@ -118,39 +138,57 @@ async def help(client, message):
 @app.on_message(filters.private & filters.command("status") & filters.user(ADMIN))
 async def status(client, message):
     # Hitung jumlah pengguna
-    user_count = len(db.search(User.user_id.exists()))
-    await message.reply_text(MESSAGES["status_message"].format(user_count=user_count))
+    user_count = await full_userbase()
+    await message.reply_text(MESSAGES["status_message"].format(user_count=len(user_count))
 
 # Handler untuk broadcast (hanya admin)
 @app.on_message(filters.private & filters.command("cast") & filters.user(ADMIN))
-async def broadcast(client, message):
-    broadcast_message = message.reply_to_message
-    if not broadcast_message:
-        await message.reply_text("Balas pesan yang ingin Anda broadcast.")
-        return
+async def send_text(client, message):
+    if message.reply_to_message:
+        query = await full_userbase()
+        broadcast_msg = message.reply_to_message
+        total = 0
+        successful = 0
+        blocked = 0
+        deleted = 0
+        unsuccessful = 0
+        
+        pls_wait = await message.reply("<i>Broadcasting Message.. This will Take Some Time</i>")
+        for chat_id in query:
+            try:
+                await broadcast_msg.copy(chat_id)
+                successful += 1
+            except FloodWait as e:
+                await asyncio.sleep(e.x)
+                await broadcast_msg.copy(chat_id)
+                successful += 1
+            except UserIsBlocked:
+                await del_user(chat_id)
+                blocked += 1
+            except InputUserDeactivated:
+                await del_user(chat_id)
+                deleted += 1
+            except:
+                unsuccessful += 1
+                pass
+            total += 1
+        
+        status = f"""<b><u>Broadcast Completed</u>
 
-    # Ambil semua pengguna dari TinyDB
-    all_users = db.search(User.user_id.exists())
-    success_count = 0
-    failed_count = 0
+Total Users: <code>{total}</code>
+Successful: <code>{successful}</code>
+Blocked Users: <code>{blocked}</code>
+Deleted Accounts: <code>{deleted}</code>
+Unsuccessful: <code>{unsuccessful}</code></b>"""
+        
+        return await pls_wait.edit(status)
 
-    # Kirim pesan ke semua pengguna
-    for user in all_users:
-        user_id = user['user_id']
-        try:
-            await broadcast_message.copy(user_id)
-            success_count += 1
-        except Exception as e:
-            print(f"Gagal mengirim pesan ke {user_id}: {e}")
-            failed_count += 1
-
-    # Kirim laporan broadcast
-    report_message = (
-        f"{MESSAGES['broadcast_success'].format(success_count=success_count)}\n"
-        f"{MESSAGES['broadcast_failed'].format(failed_count=failed_count)}"
-    )
-    await message.reply_text(report_message)
-
+    else:
+        msg = await message.reply("Silahkan balas ke pesan")
+        await asyncio.sleep(8)
+        await msg.delete()
+        
+        
 # Handler untuk menerima pesan dan media
 @app.on_message(filters.private & ~filters.command(["next", "stop", "start", "help", "cast", "status"]))
 async def handle_message(client, message):
