@@ -140,7 +140,7 @@ async def status(client, message):
     # Hitung jumlah pengguna
     user_count = await full_userbase()
     xx = len(user_count)
-    await message.reply_text(MESSAGES["status_message"].format(xx)
+    await message.reply_text(MESSAGES["status_message"].format(xx))
 
 # Handler untuk broadcast (hanya admin)
 @app.on_message(filters.private & filters.command("cast") & filters.user(ADMIN))
