@@ -236,7 +236,7 @@ async def gender_settings(client, callback_query):
     user_data = info_table.get(User.id == user_id)
     
     # Ambil data jenis kelamin dari database
-    jenis_kelamin = user_data.get('kelamin', 'Belum diatur')  # Default jika tidak ada data
+    jenis_kelamin = user_data.get('kelamin'
 
     keyboard = InlineKeyboardMarkup(
         [
