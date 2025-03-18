@@ -147,7 +147,7 @@ Unsuccessful: <code>{unsuccessful}</code></b>"""
         
         
 # Handler untuk menerima pesan dan media
-@app.on_message(filters.private & ~filters.command(["next", "stop", "start", "help", "cast", "status"]))
+@app.on_message(filters.private & ~filters.command(["next", "stop", "start", "help", "cast", "status", "settings"]))
 async def handle_message(client, message):
     user_id = str(message.from_user.id)
     user_data = db.search(User.user_id == user_id)
@@ -208,3 +208,80 @@ async def handle_callback(client, callback_query):
         message_id=callback_query.message.id,
         media=mid
     )
+
+# Handler untuk perintah /start
+@app.on_message(filters.private & filters.command("settings"))
+async def start(client, message):
+    keyboard = InlineKeyboardMarkup(
+        [
+            [InlineKeyboardButton("Jenis Kelamin 💡️", callback_data="gender")],
+            [InlineKeyboardButton("Usia", callback_data="age")],
+            [InlineKeyboardButton("📝 Sembunyikan foto/video", callback_data="hide_media")],
+            [InlineKeyboardButton("❤️ Bahasa", callback_data="language")]
+        ]
+    )
+    await message.reply_text("Pilih pengaturan yang ingin Anda ubah:\n\n**Catatan:** Anda hanya akan dicocokkan dengan pengguna yang menggunakan bahasa yang sama.", reply_markup=keyboard)
+
+# Handler untuk jenis kelamin
+@app.on_callback_query(filters.regex("^gender$"))
+async def gender_settings(client, callback_query):
+    keyboard = InlineKeyboardMarkup(
+        [
+            [InlineKeyboardButton("Saya laki-laki 😊", callback_data="male")],
+            [InlineKeyboardButton("Saya perempuan 😊", callback_data="female")],
+            [InlineKeyboardButton("Hapus jenis kelamin saya", callback_data="remove_gender")],
+            [InlineKeyboardButton("← Kembali", callback_data="back_to_main")]
+        ]
+    )
+    await callback_query.edit_message_text("Jenis kelamin Anda: Laki-laki\nUntuk mengubah atau menghapus jenis kelamin, klik tombol di bawah ini", reply_markup=keyboard)
+
+# Handler untuk usia
+@app.on_callback_query(filters.regex("^age$"))
+async def age_settings(client, callback_query):
+    keyboard = InlineKeyboardMarkup(
+        [
+            [InlineKeyboardButton("✗️ Hapus Usia", callback_data="remove_age")],
+            [InlineKeyboardButton("← Kembali", callback_data="back_to_main")]
+        ]
+    )
+    await callback_query.edit_message_text("Masukkan usia Anda dan itu akan membantu kami menemukan pasangan yang lebih cocok.\n\nMasukkan angka antara 9 dan 99. Misalnya, kirimkan kami 18 jika Anda berusia 18 tahun.\n\nAnda selalu dapat mengubah usia Anda di /settings.", reply_markup=keyboard)
+
+# Handler untuk menyembunyikan media
+@app.on_callback_query(filters.regex("^hide_media$"))
+async def hide_media_settings(client, callback_query):
+    keyboard = InlineKeyboardMarkup(
+        [
+            [InlineKeyboardButton("Aktifkan sembunyikan foto/video", callback_data="enable_hide_media")],
+            [InlineKeyboardButton("← Kembali", callback_data="back_to_main")]
+        ]
+    )
+    await callback_query.edit_message_text("Dengan mengaktifkan mode disembunyikan, semua foto, video, dokumen dan GIF yang masuk akan diburamkan. Anda bisa melihatnya jika Anda membuka media tersebut", reply_markup=keyboard)
+
+# Handler untuk bahasa
+@app.on_callback_query(filters.regex("^language$"))
+async def language_settings(client, callback_query):
+    keyboard = InlineKeyboardMarkup(
+        [
+            [InlineKeyboardButton("English", callback_data="lang_en")],
+            [InlineKeyboardButton("Spanish", callback_data="lang_es")],
+            [InlineKeyboardButton("Indonesian", callback_data="lang_id")],
+            [InlineKeyboardButton("Turkish", callback_data="lang_tr")],
+            [InlineKeyboardButton("Italian", callback_data="lang_it")],
+            [InlineKeyboardButton("Korean", callback_data="lang_ko")],
+            [InlineKeyboardButton("← Kembali", callback_data="back_to_main")]
+        ]
+    )
+    await callback_query.edit_message_text("Atur bahasa Anda.\n\n**Catatan:** Anda hanya akan dicocokkan dengan pengguna yang menggunakan bahasa yang sama.", reply_markup=keyboard)
+
+# Handler untuk kembali ke menu utama
+@app.on_callback_query(filters.regex("^back_to_main$"))
+async def back_to_main(client, callback_query):
+    keyboard = InlineKeyboardMarkup(
+        [
+            [InlineKeyboardButton("Jenis Kelamin 💡️", callback_data="gender")],
+            [InlineKeyboardButton("Usia", callback_data="age")],
+            [InlineKeyboardButton("📝 Sembunyikan foto/video", callback_data="hide_media")],
+            [InlineKeyboardButton("❤️ Bahasa", callback_data="language")]
+        ]
+    )
+    await callback_query.edit_message_text("Pilih pengaturan yang ingin Anda ubah:\n\n**Catatan:** Anda hanya akan dicocokkan dengan pengguna yang menggunakan bahasa yang sama.", reply_markup=keyboard)
