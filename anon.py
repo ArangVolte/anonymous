@@ -232,6 +232,12 @@ async def settings(client, message):
 # Handler untuk jenis kelamin
 @app.on_callback_query(filters.regex("^gender$"))
 async def gender_settings(client, callback_query):
+    user_id = callback_query.from_user.id
+    user_data = info_table.get(User.id == user_id)
+    
+    # Ambil data jenis kelamin dari database
+    jenis_kelamin = user_data.get('kelamin', 'Belum diatur')  # Default jika tidak ada data
+
     keyboard = InlineKeyboardMarkup(
         [
             [InlineKeyboardButton("Saya laki-laki 👨", callback_data="male"),
@@ -240,7 +246,12 @@ async def gender_settings(client, callback_query):
             [InlineKeyboardButton("← Kembali", callback_data="back_to_main")]
         ]
     )
-    await callback_query.edit_message_text("Jenis kelamin Anda: Laki-laki\nUntuk mengubah atau menghapus jenis kelamin, klik tombol di bawah ini", reply_markup=keyboard)
+    
+    # Tampilkan pesan dengan data jenis kelamin dari database
+    await callback_query.edit_message_text(
+        f"Jenis kelamin Anda: **{jenis_kelamin}**\nUntuk mengubah atau menghapus jenis kelamin, klik tombol di bawah ini", 
+        reply_markup=keyboard
+    )
 
 # Handler untuk usia
 @app.on_callback_query(filters.regex("^age$"))
