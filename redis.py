@@ -82,7 +82,11 @@ async def start(client, message):
 @app.on_message(filters.private & filters.command("next"))
 async def start_chat(client, message):
     user_id = str(message.from_user.id)
-
+    if not await present_user(user_id):
+        try:
+            await add_user(user_id)
+        except:
+            pass
     # Cek apakah pengguna masih dalam obrolan
     user_data = db.search(User.user_id == user_id)
     if user_data and user_data[0].get('partner_id') not in [None, "waiting"]:
