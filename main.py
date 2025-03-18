@@ -21,9 +21,6 @@ async def main():
         ])
         print("Perintah bot berhasil dipasang.")
         
-        # Biarkan bot tetap berjalan
-        await asyncio.Event().wait()
-        
     except Exception as e:
         print(f"Bot mengalami error: {e}")
     finally:
