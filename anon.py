@@ -1,11 +1,13 @@
 # anon.py
-from pyrogram import filters
+import asyncio
+from pyrogram import Client, filters
 from pyrogram.errors import FloodWait, UserIsBlocked, InputUserDeactivated
 from pyrogram.types import InputMediaPhoto, InputMediaVideo, InlineKeyboardMarkup, InlineKeyboardButton, BotCommand
-from config import ADMIN, MESSAGES
+from config import ADMIN, MESSAGES, API_ID, API_HASH, BOT_TOKEN
 from data import db, User, user_data, present_user, add_user, full_userbase, del_user, stop_chat_session
-from main import app
-import asyncio
+
+
+app = Client("anonim_chatbot", api_id=API_ID, api_hash=API_HASH, bot_token=BOT_TOKEN)
 
 
 # Handler perintah /start

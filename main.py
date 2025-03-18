@@ -1,8 +1,8 @@
-from pyrogram import Client
+from anon import app
 from pyrogram.types import BotCommand
-from config import API_ID, API_HASH, BOT_TOKEN
+import logging
 
-app = Client("anonim_chatbot", api_id=API_ID, api_hash=API_HASH, bot_token=BOT_TOKEN)
+logging.basicConfig(level=logging.INFO)
 
 if __name__ == '__main__':
     print("Bot sudah aktif")
