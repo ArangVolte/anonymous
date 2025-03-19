@@ -1,4 +1,3 @@
-# cbb.py
 from pyrogram import Client, filters
 from pyrogram.types import InputMediaPhoto, InputMediaVideo, InlineKeyboardMarkup, InlineKeyboardButton
 from anon.config import MESSAGES
@@ -173,9 +172,9 @@ async def hide_media_settings(client, callback_query):
     if user_data and user_data.get('hide'):
         status = str(user_data['hide'])
     else:
-        status = "off"
+        status = "❌"
     # Tampilkan tombol berdasarkan status
-    if status == "on":
+    if status == "✅":
         button = InlineKeyboardButton("❌ Matikan sembunyikan media", callback_data="toggle_hide_media")
     else:
         button = InlineKeyboardButton("✅ Aktifkan sembunyikan media", callback_data="toggle_hide_media")
@@ -190,13 +189,13 @@ async def hide_media_settings(client, callback_query):
 async def toggle_hide_media(client, callback_query):
     user_id = callback_query.from_user.id
     user_data = get_user_data(user_id)
-    status = user_data.get('hide', "off")  # Ambil status saat ini
+    status = user_data.get('hide', "❌")  # Ambil status saat ini
 
     # Balik status
-    if status == "on":
-        update_user_data(user_id, hide="off")  # Media off
+    if status == "✅":
+        update_user_data(user_id, hide="❌")  # Media off
     else:
-        update_user_data(user_id, hide="on")  # Media on
+        update_user_data(user_id, hide="✅")  # Media on
 
     await hide_media_settings(client, callback_query)  # Perbarui tampilan
 
@@ -237,3 +236,12 @@ async def language_settings(client, callback_query):
         "Atur bahasa Anda.\n\n**Catatan:** Anda hanya akan dicocokkan dengan pengguna yang menggunakan bahasa yang sama.",
         reply_markup=keyboard
     )
+
+# Tambahkan handler untuk callback data bahasa
+@app.on_callback_query(filters.regex("^lang_"))
+async def set_language(client, callback_query):
+    lang = callback_query.data.split("_")[1]
+    user_id = callback_query.from_user.id
+    update_user_data(user_id, language=lang)
+    await callback_query.answer(f"Bahasa telah diatur ke {lang}", show_alert=True)
+    await language_settings(client, callback_query)
