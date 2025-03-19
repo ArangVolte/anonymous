@@ -199,6 +199,41 @@ async def toggle_hide_media(client, callback_query):
 
     await hide_media_settings(client, callback_query)  # Perbarui tampilan
 
+# protect
+@app.on_callback_query(filters.regex("^protect$"))
+async def protect_settings(client, callback_query):
+    user_id = callback_query.from_user.id
+    user_data = get_user_data(user_id)
+    if user_data and user_data.get('protect'):
+        status = str(user_data['protect'])
+    else:
+        status = "False"
+    # Tampilkan tombol berdasarkan status
+    if status == "True":
+        button = InlineKeyboardButton("❌ Matikan lindungi media", callback_data="toggle_protect")
+    else:
+        button = InlineKeyboardButton("✅ Aktifkan lindungi media", callback_data="toggle_protect")
+
+    keyboard = InlineKeyboardMarkup([[button], [InlineKeyboardButton("← Kembali", callback_data="back_to_main")]])
+    await callback_query.edit_message_text(
+        f"Mode lindungi media: {status}",
+        reply_markup=keyboard
+    )
+
+@app.on_callback_query(filters.regex("^toggle_protect$"))
+async def toggle_protect(client, callback_query):
+    user_id = callback_query.from_user.id
+    user_data = get_user_data(user_id)
+    status = user_data.get('protect', "False")  # Ambil status saat ini
+
+    # Balik status
+    if status == "True":
+        update_user_data(user_id, protect="False")  # Media off
+    else:
+        update_user_data(user_id, protect="True")  # Media on
+
+    await protect_settings(client, callback_query)  # Perbarui tampilan
+
 @app.on_callback_query(filters.regex("^back_to_main$"))
 async def back_to_main(client, callback_query):
     keyboard = InlineKeyboardMarkup(
@@ -206,10 +241,10 @@ async def back_to_main(client, callback_query):
             [InlineKeyboardButton("👨 Jenis Kelamin ️👩", callback_data="gender")],
             [InlineKeyboardButton("📆 Usia", callback_data="age")],
             [InlineKeyboardButton("🎞 Sembunyikan foto/video", callback_data="hide_media")],
-            [InlineKeyboardButton("🌍 Bahasa", callback_data="bahasa")]
+            [InlineKeyboardButton("🔐Protect", callback_data="protect")]
         ]
     )
-    await callback_query.edit_message_text("Pilih pengaturan yang ingin Anda ubah:\n\n**Catatan:** Anda hanya akan dicocokkan dengan pengguna yang menggunakan bahasa yang sama.", reply_markup=keyboard)
+    await callback_query.edit_message_text("**Pilih pengaturan yang ingin Anda ubah:**", reply_markup=keyboard)
     
 
 @app.on_callback_query()
@@ -218,30 +253,3 @@ async def handle_feedback(client, callback_query):
         await callback_query.answer("Terima kasih atas umpan baliknya!")
         await callback_query.message.edit_reply_markup(reply_markup=None)
         await callback_query.edit_message_text("Terima kasih atas umpan baliknya!")
-
-@app.on_callback_query(filters.regex("^bahasa$"))
-async def language_settings(client, callback_query):
-    keyboard = InlineKeyboardMarkup(
-        [
-            [InlineKeyboardButton("🇬🇧 English", callback_data="lang_en"),
-            InlineKeyboardButton("🇮🇩 Indonesia", callback_data="lang_id"),
-            InlineKeyboardButton("🇮🇹 Italian", callback_data="lang_it")],
-            [InlineKeyboardButton("🇪🇸 Spanish", callback_data="lang_es"),
-            InlineKeyboardButton("🇹🇷 Turkish", callback_data="lang_tr"),
-            InlineKeyboardButton("🇰🇷 Korean", callback_data="lang_ko")],
-            [InlineKeyboardButton("← Kembali", callback_data="back_to_main")]
-        ]
-    )
-    await callback_query.edit_message_text(
-        "Atur bahasa Anda.\n\n**Catatan:** Anda hanya akan dicocokkan dengan pengguna yang menggunakan bahasa yang sama.",
-        reply_markup=keyboard
-    )
-
-# Tambahkan handler untuk callback data bahasa
-@app.on_callback_query(filters.regex("^lang_"))
-async def set_language(client, callback_query):
-    lang = callback_query.data.split("_")[1]
-    user_id = callback_query.from_user.id
-    update_user_data(user_id, language=lang)
-    await callback_query.answer(f"Bahasa telah diatur ke {lang}", show_alert=True)
-    await language_settings(client, callback_query)

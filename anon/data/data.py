@@ -34,7 +34,7 @@ async def stop_chat_session(user_id):
             
 
 # Fungsi untuk menambahkan atau memperbarui data pengguna
-def update_user_data(user_id, gender=None, age=None, hide=None, lang=None):
+def update_user_data(user_id, gender=None, age=None, hide=None, protect=None):
     user_data = userdb.get(User.user_id == user_id)
     
     if user_data:
@@ -45,8 +45,8 @@ def update_user_data(user_id, gender=None, age=None, hide=None, lang=None):
             userdb.update({'age': age}, User.user_id == user_id)
         if hide is not None:
             userdb.update({'hide': hide}, User.user_id == user_id)
-        if lang is not None:
-            userdb.update({'lang': lang}, User.user_id == user_id)
+        if protect is not None:
+            userdb.update({'protect': protect}, User.user_id == user_id)
     else:
         # Tambahkan data baru
         userdb.insert({
@@ -54,7 +54,7 @@ def update_user_data(user_id, gender=None, age=None, hide=None, lang=None):
             'gender': gender,
             'age': age,
             'hide': hide,
-            'lang': lang
+            'protect': protect
         })
 
 # Fungsi untuk mengambil data pengguna

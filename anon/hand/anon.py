@@ -3,6 +3,7 @@ import asyncio
 from pyrogram import filters
 from pyrogram.errors import FloodWait, UserIsBlocked, InputUserDeactivated
 from pyrogram.types import InputMediaPhoto, InputMediaVideo, InlineKeyboardMarkup, InlineKeyboardButton, BotCommand
+from distutils.util import strtobool
 from anon.config import *
 from anon.data.data import *
 from anon import app
@@ -173,7 +174,11 @@ async def handle_message(client, message):
         return
 
     reply_id = message.reply_to_message.id -1 if message.reply_to_message else None
-    
+    prot = get_user_data(partner_id)
+    if user_data and 'protect' in user_data:
+        pt = str(user_data['protect'])
+    else:
+    	pt = "True"
     try:
         user_data = get_user_data(partner_id)
 
@@ -181,20 +186,27 @@ async def handle_message(client, message):
             status = str(user_data['hide'])
         else:
             status = "✅"
-        if status == "✅":
-            if message.photo or message.video:
+        if message.photo or message.video:
+        	if status == "✅"
                 await app.send_photo(
                 partner_id,
                 photo="https://akcdn.detik.net.id/community/media/visual/2022/11/18/simbol-bahan-kimia-5.jpeg?w=861",
+                protect_content=strtobool(pt),
                 reply_markup=InlineKeyboardMarkup(
                     [[InlineKeyboardButton("Lihat", callback_data=f"lihat {user_id}|{message.id}")]]
                 ),
                 reply_to_message_id=reply_id
                 )
             else:
-            	await message.copy(partner_id, reply_to_message_id=reply_id)
+            	await message.copy(
+            		partner_id,
+            		protect_content=strtobool(pt),
+            		reply_to_message_id=reply_id)
         else:
-            await message.copy(partner_id, reply_to_message_id=reply_id)
+            await message.copy(
+            	partner_id,
+            	protect_content=strtobool(pt),
+            	reply_to_message_id=reply_id)
     except Exception as e:
         print(f"Gagal mengirim pesan/media: {e}")
         await message.reply_text(MESSAGES["block_message"])
@@ -208,7 +220,7 @@ async def start(client, message):
             [InlineKeyboardButton("👨 Jenis Kelamin ️👩", callback_data="gender")],
             [InlineKeyboardButton("📆 Usia", callback_data="age")],
             [InlineKeyboardButton("🎞 Sembunyikan foto/video", callback_data="hide_media")],
-            [InlineKeyboardButton("🌍 Bahasa", callback_data="bahasa")]
+            [InlineKeyboardButton("🔐Protect", callback_data="protect")]
         ]
     )
-    await message.reply_text("Pilih pengaturan yang ingin Anda ubah:\n\n**Catatan:** Anda hanya akan dicocokkan dengan pengguna yang menggunakan bahasa yang sama.", reply_markup=keyboard)
+    await message.reply_text("**Pilih pengaturan yang ingin Anda ubah:**.", reply_markup=keyboard)
