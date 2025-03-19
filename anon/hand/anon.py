@@ -258,7 +258,7 @@ async def handle_message(client, message):
                     ),
                     reply_to_message_id=reply_id
                 )
-            elif status == "❌":
+            else:
             	await message.copy(
                 partner_id,
                 protect_content=bool(strtobool(pt)),
