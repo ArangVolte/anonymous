@@ -33,45 +33,36 @@ async def stop_chat_session(user_id):
             db.remove(User.user_id == partner_id)
             
 
-async def add_data(user_id, kelamin, usia, notif, bahasa):
-    cek = userdb.get((User.user_id == user_id) & (User.kelamin == kelamin) & (User.usia == usia) & (User.notif == notif) & (User.bahasa == bahasa))
-    if cek:
-        userdb.update(
-            {
-                "kelamin": kelamin,
-                "usia": usia,
-                "notif": notif,
-                "bahasa": bahasa,
-            },
-            User.user_id == user_id
-        )
-    else:
-        userdb.insert({"user_id": user_id, "kelamin": kelamin, "usia": usia, "notif": notif, "bahasa": bahasa})
+from tinydb import TinyDB, Query
 
-async def kelamin_info(user_id):
-    r = userdb.get((User.user_id == user_id) & (User.kelamin == kelamin))
-    if r:
-        return r
-    else:
-        return "Tidak diketahui"
+# Inisialisasi database
+db = TinyDB('user_db.json')
+userdb = db.table('info')
 
-async def usia_info(user_id):
-    r = userdb.get((User.user_id == user_id) & (User.usia == usia))
-    if r:
-        return r
+# Fungsi untuk menambahkan atau memperbarui data pengguna
+def update_user_data(user_id, gender=None, age=None, hide=None, lang=None):
+    user_data = userdb.get(User.user_id == user_id)
+    
+    if user_data:
+        # Update data yang ada
+        if gender is not None:
+            userdb.update({'gender': gender}, User.user_id == user_id)
+        if age is not None:
+            userdb.update({'age': age}, User.user_id == user_id)
+        if hide is not None:
+            userdb.update({'hide': hide}, User.user_id == user_id)
+        if lang is not None:
+            userdb.update({'lang': lang}, User.user_id == user_id)
     else:
-        return "Tidak diketahui"
-        
-async def noti_info(user_id):
-    r = userdb.get((User.user_id == user_id) & (User.notif == notif))
-    if r:
-        return r
-    else:
-        return "on"
+        # Tambahkan data baru
+        userdb.insert({
+            'user_id': user_id,
+            'gender': gender,
+            'age': age,
+            'hide': hide,
+            'lang': lang
+        })
 
-async def bahasa_info(user_id):
-    r = userdb.get((User.user_id == user_id) & (User.bahasa == bahasa))
-    if r:
-        return r
-    else:
-        return "Indonesia"
+# Fungsi untuk mengambil data pengguna
+def get_user_data(user_id):
+    return userdb.get(User.user_id == user_id)

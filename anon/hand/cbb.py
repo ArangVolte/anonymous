@@ -38,6 +38,14 @@ async def handle_callback(client, callback_query):
 # Handler untuk jenis kelamin
 @app.on_callback_query(filters.regex("^gender$"))
 async def gender_settings(client, callback_query):
+    user_id = callback_query.from_user.id
+    user_data = get_user_data(user_id)
+    
+    if user_data and user_data.get('gender'):
+        gender_text = user_data['gender']
+    else:
+        gender_text = "Belum diatur"
+    
     keyboard = InlineKeyboardMarkup(
         [
             [InlineKeyboardButton("Saya laki-laki 👨", callback_data="male"),
@@ -46,18 +54,67 @@ async def gender_settings(client, callback_query):
             [InlineKeyboardButton("← Kembali", callback_data="back_to_main")]
         ]
     )
-    await callback_query.edit_message_text("Jenis kelamin Anda: Laki-laki\nUntuk mengubah atau menghapus jenis kelamin, klik tombol di bawah ini", reply_markup=keyboard)
+    await callback_query.edit_message_text(f"Jenis kelamin Anda: **{gender_text}**\nUntuk mengubah atau menghapus jenis kelamin, klik tombol di bawah ini", reply_markup=keyboard)
+
+@app.on_callback_query(filters.regex("^male$|^female$"))
+async def set_gender(client, callback_query):
+    user_id = callback_query.from_user.id
+    gender = callback_query.data
+    
+    update_user_data(user_id, gender=gender)
+    await callback_query.answer(f"Jenis kelamin Anda telah diatur menjadi {gender}", show_alert=True)
+    await gender_settings(client, callback_query)
+
+@app.on_callback_query(filters.regex("^remove_gender$"))
+async def remove_gender(client, callback_query):
+    user_id = callback_query.from_user.id
+    
+    update_user_data(user_id, gender=None)
+    await callback_query.answer("Jenis kelamin Anda telah dihapus", show_alert=True)
+    await gender_settings(client, callback_query)
 
 # Handler untuk usia
 @app.on_callback_query(filters.regex("^age$"))
 async def age_settings(client, callback_query):
+    user_id = callback_query.from_user.id
+    user_data = get_user_data(user_id)
+    
+    age_text = "Usia Anda: "
+    if user_data and user_data.get('age'):
+        age_text += str(user_data['age'])
+    else:
+        age_text += "Belum diatur"
+    
     keyboard = InlineKeyboardMarkup(
         [
             [InlineKeyboardButton("❌ Hapus Usia", callback_data="remove_age")],
             [InlineKeyboardButton("← Kembali", callback_data="back_to_main")]
         ]
     )
-    await callback_query.edit_message_text("Masukkan usia Anda dan itu akan membantu kami menemukan pasangan yang lebih cocok.\n\nMasukkan angka antara 9 dan 99. Misalnya, kirimkan kami 18 jika Anda berusia 18 tahun.\n\nAnda selalu dapat mengubah usia Anda di /settings.", reply_markup=keyboard)
+    await callback_query.edit_message_text(f"Masukkan usia Anda, Usia anda saat ini: **{age_text}**\ndan itu akan membantu kami menemukan pasangan yang lebih cocok.\n\nMasukkan angka antara 9 dan 99. Misalnya, kirimkan kami 18 jika Anda berusia 18 tahun.\n\nAnda selalu dapat mengubah usia Anda di /settings.", reply_markup=keyboard)
+
+@app.on_message(filters.text & filters.private)
+async def set_age(client, message):
+    user_id = message.from_user.id
+    try:
+        age = int(message.text)
+        if 9 <= age <= 99:
+            update_user_data(user_id, age=age)
+            await message.reply(f"Usia Anda telah diatur menjadi {age}")
+        else:
+            await message.reply("Usia harus antara 9 dan 99.")
+    except ValueError:
+        await message.reply("Masukkan usia yang valid (angka antara 9 dan 99).")
+
+@app.on_callback_query(filters.regex("^remove_age$"))
+async def remove_age(client, callback_query):
+    user_id = callback_query.from_user.id
+    
+    update_user_data(user_id, age=None)
+    await callback_query.answer("Usia Anda telah dihapus", show_alert=True)
+    await age_settings(client, callback_query)
+    )
+    
 
 # Handler untuk menyembunyikan media
 @app.on_callback_query(filters.regex("^hide_media$"))
