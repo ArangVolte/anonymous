@@ -132,18 +132,20 @@ async def show_age_page(client, callback_query, page):
         "Anda selalu dapat mengubah usia Anda di /settings.",
         reply_markup=InlineKeyboardMarkup(keyboard)
     )
-    
-@app.on_callback_query(filters.regex("^next_page_(\d+)$"))
+
+
+@app.on_callback_query(filters.regex(r"^next_page_(\d+)$"))
 async def next_page(client, callback_query):
     page = int(callback_query.matches[0].group(1))
     await show_age_page(client, callback_query, page)
 
-@app.on_callback_query(filters.regex("^prev_page_(\d+)$"))
+@app.on_callback_query(filters.regex(r"^prev_page_(\d+)$"))
 async def prev_page(client, callback_query):
     page = int(callback_query.matches[0].group(1))
     await show_age_page(client, callback_query, page)
 
-@app.on_callback_query(filters.regex("^update_age_(\d+)$"))
+
+@app.on_callback_query(filters.regex(r"^update_age_(\d+)$"))
 async def update_age(client, callback_query):
     user_id = callback_query.from_user.id
     age = int(callback_query.matches[0].group(1))
@@ -171,9 +173,9 @@ async def hide_media_settings(client, callback_query):
     if user_data and user_data.get('notif'):
         status = str(user_data['notif'])
     else:
-        status = "❌"
+        status = "off"
     # Tampilkan tombol berdasarkan status
-    if status == "✅":
+    if status == "on":
         button = InlineKeyboardButton("❌ Matikan sembunyikan media", callback_data="toggle_hide_media")
     else:
         button = InlineKeyboardButton("✅ Aktifkan sembunyikan media", callback_data="toggle_hide_media")
@@ -188,13 +190,13 @@ async def hide_media_settings(client, callback_query):
 async def toggle_hide_media(client, callback_query):
     user_id = callback_query.from_user.id
     user_data = get_user_data(user_id)
-    status = user_data.get('notif', "❌")  # Ambil status saat ini
+    status = user_data.get('notif', "off")  # Ambil status saat ini
 
     # Balik status
-    if status == "✅":
-        update_user_data(user_id, notif="❌")  # Media off
+    if status == "on":
+        update_user_data(user_id, notif="off")  # Media off
     else:
-        update_user_data(user_id, notif="✅")  # Media on
+        update_user_data(user_id, notif="on")  # Media on
 
     await hide_media_settings(client, callback_query)  # Perbarui tampilan
 
