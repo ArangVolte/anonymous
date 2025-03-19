@@ -1,7 +1,6 @@
 # cbb.py
 from pyrogram import Client, filters
 from pyrogram.types import InputMediaPhoto, InputMediaVideo, InlineKeyboardMarkup, InlineKeyboardButton
-from anon.config import MESSAGES
 from anon.data.data import *
 from anon.data.lang import *
 from anon import app
@@ -142,6 +141,7 @@ async def next_page(client, callback_query):
 async def prev_page(client, callback_query):
     page = int(callback_query.matches[0].group(1))
     await show_age_page(client, callback_query, page)
+
 
 @app.on_callback_query(filters.regex("^update_age_(\d+)$"))
 async def update_age(client, callback_query):
