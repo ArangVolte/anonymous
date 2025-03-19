@@ -6,6 +6,8 @@ from pyrogram.types import InputMediaPhoto, InputMediaVideo, InlineKeyboardMarku
 from config import ADMIN, MESSAGES, API_ID, API_HASH, BOT_TOKEN
 from data import db, User, user_data, present_user, add_user, full_userbase, del_user, stop_chat_session
 
+app = Client("anonim_chatbot", api_id=API_ID, api_hash=API_HASH, bot_token=BOT_TOKEN)
+
 # Handler perintah /start
 @app.on_message(filters.command("start"))
 async def start(client, message):
