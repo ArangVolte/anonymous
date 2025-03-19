@@ -12,10 +12,10 @@ from anon.hand import ALL_MODULES
 from anon.config import *
 
 msg = """
-🔥 **AnonBot Berhasil Di Aktifkan**
+🔥 AnonBot Berhasil Di Aktifkan
 ━━
-➠ **Python Version** > `{}`
-➠ **Pyrogram Version** > `{}`
+➠ python Version > {}
+➠ Pyrogram Version > {}
 ━━
 """
 

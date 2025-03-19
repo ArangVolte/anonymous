@@ -189,7 +189,7 @@ async def handle_message(client, message):
         pt = partner_data['protect']
         status = partner_data['hide']
     else:
-        pt = True
+        pt = "True"
         status = "✅"
 
     try:
