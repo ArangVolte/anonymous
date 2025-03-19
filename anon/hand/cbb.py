@@ -78,12 +78,10 @@ async def remove_gender(client, callback_query):
 async def age_settings(client, callback_query):
     user_id = callback_query.from_user.id
     user_data = get_user_data(user_id)
-    
-    age_text = "Usia Anda: "
     if user_data and user_data.get('age'):
-        age_text += str(user_data['age'])
+        age_text = str(user_data['age'])
     else:
-        age_text += "Belum diatur"
+        age_text = "Belum diatur"
     
     keyboard = InlineKeyboardMarkup(
         [
