@@ -138,6 +138,7 @@ async def prev_page(client, callback_query):
             [InlineKeyboardButton("❌ Hapus Usia", callback_data="remove_age")],
             [InlineKeyboardButton("← Kembali", callback_data="back_to_main")]
         ]
+        ]
     )
     await callback_query.edit_message_reply_markup(reply_markup=keyboard)
 
