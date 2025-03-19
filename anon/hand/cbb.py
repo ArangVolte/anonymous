@@ -34,7 +34,8 @@ async def handle_callback(client, callback_query):
         message_id=callback_query.message.id,
         media=mid
     )
-
+    update_user_data(callback_query.from_user.id, "✅") 
+    
 # Handler untuk jenis kelamin
 @app.on_callback_query(filters.regex("^gender$"))
 async def gender_settings(client, callback_query):
@@ -131,7 +132,7 @@ async def show_age_page(client, callback_query, page):
         "Anda selalu dapat mengubah usia Anda di /settings.",
         reply_markup=InlineKeyboardMarkup(keyboard)
     )
-
+    
 @app.on_callback_query(filters.regex("^next_page_(\d+)$"))
 async def next_page(client, callback_query):
     page = int(callback_query.matches[0].group(1))
@@ -163,16 +164,44 @@ async def remove_age(client, callback_query):
     await age_settings(client, callback_query)  
   
   
-# Handler untuk menyembunyikan media
 @app.on_callback_query(filters.regex("^hide_media$"))
 async def hide_media_settings(client, callback_query):
-    keyboard = InlineKeyboardMarkup(
-        [
-            [InlineKeyboardButton("✅ Aktifkan sembunyikan foto/video", callback_data="enable_hide_media")],
-            [InlineKeyboardButton("← Kembali", callback_data="back_to_main")]
-        ]
+    user_id = callback_query.from_user.id
+    user_data = get_user_data(user_id)
+    if user_data and user_data.get('notif'):
+        status = str(user_data['notif'])
+    else:
+        status = "❌"
+    # Tampilkan tombol berdasarkan status
+    if status == "✅":
+        button = InlineKeyboardButton("❌ Matikan sembunyikan media", callback_data="toggle_hide_media")
+    else:
+        button = InlineKeyboardButton("✅ Aktifkan sembunyikan media", callback_data="toggle_hide_media")
+
+    keyboard = InlineKeyboardMarkup([[button], [InlineKeyboardButton("← Kembali", callback_data="back_to_main")]])
+    await callback_query.edit_message_text(
+        f"Mode sembunyikan media: {status}",
+        reply_markup=keyboard
     )
-    await callback_query.edit_message_text("Dengan mengaktifkan mode disembunyikan, semua foto, video, dokumen dan GIF yang masuk akan diburamkan. Anda bisa melihatnya jika Anda membuka media tersebut", reply_markup=keyboard)
+
+@app.on_callback_query(filters.regex("^toggle_hide_media$"))
+async def toggle_hide_media(client, callback_query):
+    user_id = callback_query.from_user.id
+    status = user_data.get(user_id, "❌")  # Ambil status saat ini
+
+    # Balik status
+    if status == "✅":
+        update_user_data(user_id, "❌")  # Media off
+    else:
+        update_user_data(user_id, "✅")  # Media on
+
+    await hide_media_settings(client, callback_query)  # Perbarui tampilan
+
+@app.on_callback_query(filters.regex("^back_to_main$"))
+async def back_to_main(client, callback_query):
+    keyboard = InlineKeyboardMarkup([[InlineKeyboardButton("Pengaturan Sembunyikan Media", callback_data="hide_media")]])
+    await callback_query.edit_message_text("Menu Utama", reply_markup=keyboard)
+
 
 # Handler untuk bahasa
 @app.on_callback_query(filters.regex("^language$"))

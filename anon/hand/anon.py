@@ -172,8 +172,11 @@ async def handle_message(client, message):
         await message.reply_text(MESSAGES["error_message"])
         return
     reply_id = message.reply_to_message.id - 1 if message.reply_to_message else None
+    user_data = get_user_data(user_id)
+    if user_data and user_data.get('notif'):
+        status = str(user_data['notif'])
     try:
-        if message.photo or message.video:
+        if status == "✅" & message.photo or message.video:
             # Kirim media dengan tombol "Lihat"
             await app.send_photo(
                 partner_id,
