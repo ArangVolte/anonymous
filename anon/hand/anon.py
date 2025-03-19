@@ -185,13 +185,13 @@ async def handle_message(client, message):
 
     reply_id = message.reply_to_message.id -1 if message.reply_to_message else None
     data = get_user_data(partner_id)
-    if data and data.get('protect') and data.get('hide'):
+    if data.get('protect') and data.get('hide'):
         pt = str(partner_data['protect'])
         status = str(partner_data['hide'])
         print(f"{pt} | {status}")
     else:
-        pt = "False"
-        status = "❌"
+        pt = "True"
+        status = "✅"
 
     try:
         if message.photo or message.video:
