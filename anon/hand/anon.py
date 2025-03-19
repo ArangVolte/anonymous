@@ -176,7 +176,7 @@ async def handle_message(client, message):
     if user_data and user_data.get('notif'):
         status = str(user_data['notif'])
     try:
-        if status == "✅" & message.photo or message.video:
+        if message.photo or message.video:
             # Kirim media dengan tombol "Lihat"
             await app.send_photo(
                 partner_id,
