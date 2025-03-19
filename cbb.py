@@ -3,6 +3,7 @@ from pyrogram import Client, filters
 from pyrogram.types import InputMediaPhoto, InputMediaVideo, InlineKeyboardMarkup, InlineKeyboardButton
 from config import MESSAGES
 from data import db, User, stop_chat_session
+from anon import app
 
 # Handler untuk callback query (tombol "Lihat")
 @app.on_callback_query(filters.regex("lihat"))
