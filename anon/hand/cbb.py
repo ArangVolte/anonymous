@@ -107,10 +107,10 @@ async def show_age_page(client, callback_query, page):
 
     # Buat grid 10x10
     keyboard = []
-    for row in range(0, 100, 10):
+    for row in range(0, 100, 5):
         row_buttons = [
             InlineKeyboardButton(str(start + i), callback_data=f"update_age_{start + i}")
-            for i in range(row, min(row + 10, 100 - start))
+            for i in range(row, min(row + 5, 100 - start))
         ]
         keyboard.append(row_buttons)
     
