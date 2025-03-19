@@ -175,10 +175,9 @@ async def handle_message(client, message):
     
     try:
     	user_data = get_user_data(user_id)
-        status = str(user_data['hide'])
-        if status == "✅":
-        	if message.photo or message.video:
-        		await app.send_photo(
+        status = user_data.get('hide', "❌") 
+        if status == "✅" & message.photo or message.video:
+            await app.send_photo(
                 partner_id,
                 photo="https://akcdn.detik.net.id/community/media/visual/2022/11/18/simbol-bahan-kimia-5.jpeg?w=861",
                 reply_markup=InlineKeyboardMarkup(
