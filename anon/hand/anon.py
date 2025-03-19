@@ -73,7 +73,8 @@ async def stop_chat(client, message):
     user_id = str(message.from_user.id)
     user_data = db.search(User.user_id == user_id)
     
-    msg = "Jika Anda ingin, berikan umpan balik tentang pasangan Anda. Ini akan membantu kami menemukan pasangan yang lebih baik untuk Anda di masa depan.",
+    msg = "Jika Anda ingin, berikan umpan balik tentang pasangan Anda. Ini akan membantu kami menemukan pasangan yang lebih baik untuk Anda di masa depan."
+    
     key=InlineKeyboardMarkup(
         [
             [InlineKeyboardButton("👍", callback_data="like"),

@@ -209,3 +209,4 @@ async def handle_feedback(client, callback_query):
     if callback_query.data in ["like", "dislike"]:
         await callback_query.answer("Terima kasih atas umpan baliknya!")
         await callback_query.message.edit_reply_markup(reply_markup=None)
+        await callback_query.edit_message_text("Terima kasih atas umpan baliknya!")
