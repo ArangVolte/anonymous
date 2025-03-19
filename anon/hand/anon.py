@@ -171,12 +171,13 @@ async def handle_message(client, message):
     if partner_id == user_id:
         await message.reply_text(MESSAGES["error_message"])
         return
-    reply_id = message.reply_to_message.id - 1 if message.reply_to_message else None
+
+    reply_id = message.reply_to_message.id -1 if message.reply_to_message else None
     
     try:
-    	user_data = get_user_data(partner_id)
+        user_data = get_user_data(partner_id)
         status = user_data.get('hide') 
-        if status == "✅" & message.photo or message.video:
+        if status == "✅" and (message.photo or message.video):
             await app.send_photo(
                 partner_id,
                 photo="https://akcdn.detik.net.id/community/media/visual/2022/11/18/simbol-bahan-kimia-5.jpeg?w=861",
@@ -191,7 +192,7 @@ async def handle_message(client, message):
         print(f"Gagal mengirim pesan/media: {e}")
         await message.reply_text(MESSAGES["block_message"])
         await stop_chat_session(user_id)
-
+        
 # Handler untuk perintah /start
 @app.on_message(filters.private & filters.command("settings"))
 async def start(client, message):
