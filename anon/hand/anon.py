@@ -20,15 +20,15 @@ async def start(client, message):
             await add_user(user_id)
         except:
             pass
+
     user_data = db.search(User.user_id == user_id)
     if user_data and user_data[0].get('partner_id') not in [None, "waiting"]:
-        await message.reply_text("Kamu masih dalam obrolan. Gunakan /stop untuk menghentikan percakapan.")
-        return  # Hentikan eksekusi lebih lanjut jika masih dalam obrolan
+        await message.reply_text(get_message(user_id, "no_chat_message"))
+        return
 
-    # Jika tidak dalam obrolan, lanjutkan seperti biasa
     db.insert({'user_id': user_id, 'username': username, 'partner_id': None})
-    await message.reply_text(MESSAGES["start_message"])
-
+    await message.reply_text(get_message(user_id, "start_message"))
+    
 # Handler perintah /next (mencari pasangan chat)
 @app.on_message(filters.private & filters.command("next"))
 async def start_chat(client, message):
@@ -38,34 +38,30 @@ async def start_chat(client, message):
             await add_user(user_id)
         except:
             pass
-    # Cek apakah pengguna masih dalam obrolan
+
     user_data = db.search(User.user_id == user_id)
     if user_data and user_data[0].get('partner_id') not in [None, "waiting"]:
-        await message.reply_text("Kamu masih dalam obrolan. Gunakan /stop untuk menghentikan percakapan.")
-        return  # Hentikan eksekusi lebih lanjut jika masih dalam obrolan
+        await message.reply_text(get_message(user_id, "no_chat_message"))
+        return
 
-    # Jika tidak dalam obrolan, lanjutkan seperti biasa
     waiting_partner = db.search(User.partner_id == "waiting")
     if waiting_partner:
         waiting_partner_id = waiting_partner[0]['user_id']
 
-        # Cek apakah user_id sama dengan waiting_partner_id
         if user_id == waiting_partner_id:
-            # Hapus data pengguna yang sedang menunggu
             db.remove(User.user_id == user_id)
             db.insert({'user_id': user_id, 'partner_id': "waiting"})
-            await message.reply_text(MESSAGES["next_message"])
+            await message.reply_text(get_message(user_id, "next_message"))
             return
 
-        # Jika tidak sama, lanjutkan dengan menghubungkan kedua pengguna
         db.update({'partner_id': user_id}, User.user_id == waiting_partner_id)
         db.insert({'user_id': user_id, 'partner_id': waiting_partner_id})
         
-        await app.send_message(waiting_partner_id, MESSAGES["partner_connected"])
-        await message.reply_text(MESSAGES["partner_connected"])
+        await app.send_message(waiting_partner_id, get_message(waiting_partner_id, "partner_connected"))
+        await message.reply_text(get_message(user_id, "partner_connected"))
     else:
         db.insert({'user_id': user_id, 'partner_id': "waiting"})
-        await message.reply_text(MESSAGES["next_message"])
+        await message.reply_text(get_message(user_id, "next_message"))
         
 # Handler perintah /stop (menghentikan chat)
 @app.on_message(filters.private & filters.command("stop"))
@@ -76,27 +72,28 @@ async def stop_chat(client, message):
     if user_data:
         partner_id = user_data[0].get('partner_id')
         if partner_id and partner_id != "waiting":
-            await message.reply_text(MESSAGES["stop_message"])
-            await app.send_message(partner_id, MESSAGES["partner_stop_message"])
+            await message.reply_text(get_message(user_id, "stop_message"))
+            await app.send_message(partner_id, get_message(partner_id, "partner_stop_message"))
             await stop_chat_session(user_id)
         else:
-            await message.reply_text(MESSAGES["no_chat_message"])
+            await message.reply_text(get_message(user_id, "no_chat_message"))
     else:
-        await message.reply_text(MESSAGES["no_chat_message"])
+        await message.reply_text(get_message(user_id, "no_chat_message"))
 
 # Handler perintah /help
 @app.on_message(filters.private & filters.command("help"))
 async def help(client, message):
-    await message.reply_text(MESSAGES["help_message"])
+    user_id = str(message.from_user.id)
+    await message.reply_text(get_message(user_id, "help_message"))
 
 # Handler perintah /status (khusus admin)
 @app.on_message(filters.private & filters.command("status") & filters.user(ADMIN))
 async def status(client, message):
-    # Hitung jumlah pengguna
+    user_id = str(message.from_user.id)
     _count = await full_userbase()
     xx = len(_count)
-    await message.reply_text(MESSAGES["status_message"].format(user_count=xx))
-
+    await message.reply_text(get_message(user_id, "status_message").format(user_count=xx))
+    
 # Handler untuk broadcast (hanya admin)
 @app.on_message(filters.private & filters.command("cast") & filters.user(ADMIN))
 async def send_text(client, message):

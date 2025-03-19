@@ -1,0 +1,41 @@
+{
+	"start_message": "Welcome to the anonymous chat bot! Use /next to find a chat partner.",
+	"next_message": "Looking for a chat partner...",
+	"partner_connected": "You have been connected to a chat partner. Start chatting!",
+	"stop_message": "Chat stopped. Use /next to find a new partner.",
+	"partner_stop_message": "Your partner has stopped the chat.",
+	"no_chat_message": "You are not in a chat. Use /next to find a partner.",
+	"help_message": "Here are some available commands:\n/start - Start the bot\n/next - Find a chat partner\n/stop - Stop the chat\n/help - Show help message",
+	"status_message": "Total users: {user_count}",
+	"error_message": "An error occurred. Please try again.",
+	"block_message": "Your partner has blocked you or deleted their account.",
+	"settings": {
+		"gender": {
+			"title": "Select Gender",
+			"male": "Male 👨",
+			"female": "Female 👩",
+			"remove": "❌ Remove my gender",
+			"back": "← Back"
+		},
+		"age": {
+			"title": "Enter Your Age",
+			"remove": "❌ Remove Age",
+			"back": "← Back"
+		},
+		"hide_media": {
+			"title": "Hide Media",
+			"enable": "✅ Enable hide photo/video",
+			"back": "← Back"
+		},
+		"language": {
+			"title": "Select Language",
+			"en": "🇬🇧 English",
+			"id": "🇮🇩 Indonesia",
+			"it": "🇮🇹 Italian",
+			"es": "🇪🇸 Spanish",
+			"tr": "🇹🇷 Turkish",
+			"ko": "🇰🇷 Korean",
+			"back": "← Back"
+		}
+	}
+}

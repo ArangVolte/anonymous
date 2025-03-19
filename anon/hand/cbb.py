@@ -177,19 +177,20 @@ async def hide_media_settings(client, callback_query):
 # Handler untuk bahasa
 @app.on_callback_query(filters.regex("^language$"))
 async def language_settings(client, callback_query):
+    user_id = str(callback_query.from_user.id)
     keyboard = InlineKeyboardMarkup(
         [
-            [InlineKeyboardButton("🇬🇧 English", callback_data="lang_en"),
-            InlineKeyboardButton("🇮🇩Indonesia", callback_data="lang_id"),
-            InlineKeyboardButton("🇮🇹 Italian", callback_data="lang_it")],
-            [InlineKeyboardButton("🇪🇸 Spanish", callback_data="lang_es"),
-            InlineKeyboardButton("🇹🇷 Turkish", callback_data="lang_tr"),
-            InlineKeyboardButton("🇰🇷 Korean", callback_data="lang_ko")],
-            [InlineKeyboardButton("← Kembali", callback_data="back_to_main")]
+            [InlineKeyboardButton(get_message(user_id, "settings.language.en"), callback_data="lang_en"),
+             InlineKeyboardButton(get_message(user_id, "settings.language.id"), callback_data="lang_id")],
+            [InlineKeyboardButton(get_message(user_id, "settings.language.it"), callback_data="lang_it"),
+             InlineKeyboardButton(get_message(user_id, "settings.language.es"), callback_data="lang_es")],
+            [InlineKeyboardButton(get_message(user_id, "settings.language.tr"), callback_data="lang_tr"),
+             InlineKeyboardButton(get_message(user_id, "settings.language.ko"), callback_data="lang_ko")],
+            [InlineKeyboardButton(get_message(user_id, "settings.language.back"), callback_data="back_to_main")]
         ]
     )
-    await callback_query.edit_message_text("Atur bahasa Anda.\n\n**Catatan:** Anda hanya akan dicocokkan dengan pengguna yang menggunakan bahasa yang sama.", reply_markup=keyboard)
-
+    await callback_query.edit_message_text(get_message(user_id, "settings.language.title"), reply_markup=keyboard)
+    
 # Handler untuk kembali ke menu utama
 @app.on_callback_query(filters.regex("^back_to_main$"))
 async def back_to_main(client, callback_query):
@@ -203,13 +204,10 @@ async def back_to_main(client, callback_query):
     )
     await callback_query.edit_message_text("Pilih pengaturan yang ingin Anda ubah:\n\n**Catatan:** Anda hanya akan dicocokkan dengan pengguna yang menggunakan bahasa yang sama.", reply_markup=keyboard)
     
-@app.on_callback_query()
-async def lang_callback(client, callback_query):
-    user_id = callback_query.from_user.id
-    data = callback_query.data
-
-    if data.startswith("lang_"):
-        lang = data.split("_")[1]
-        update_user_data(user_id, lang=lang)
-        await callback_query.answer(f"Bahasa telah diubah ke {lang}.")
-        await callback_query.message.edit_text("Bahasa Anda telah diatur ke 🇮🇩 Indonesian Anda hanya akan dipasangkan dengan pengguna yang berbicara 🇮🇩 Indonesian")
+@app.on_callback_query(filters.regex("^lang_"))
+async def change_language(client, callback_query):
+    user_id = str(callback_query.from_user.id)
+    lang_code = callback_query.data.split("_")[1]
+    update_user_data(user_id, lang=lang_code)  # Simpan preferensi bahasa pengguna
+    await callback_query.answer(f"Bahasa diubah ke {lang_code}.")
+    await callback_query.edit_message_text(get_message(user_id, "settings.language.title"))
