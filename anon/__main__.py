@@ -41,4 +41,3 @@ async def main():
 
 if __name__ == "__main__":
     LOOP.run_until_complete(main())
-    print("Bot sudah aktif")
