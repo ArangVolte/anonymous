@@ -170,8 +170,8 @@ async def remove_age(client, callback_query):
 async def hide_media_settings(client, callback_query):
     user_id = callback_query.from_user.id
     user_data = get_user_data(user_id)
-    if user_data and user_data.get('notif'):
-        status = str(user_data['notif'])
+    if user_data and user_data.get('hide'):
+        status = str(user_data['hide'])
     else:
         status = "off"
     # Tampilkan tombol berdasarkan status
@@ -190,13 +190,13 @@ async def hide_media_settings(client, callback_query):
 async def toggle_hide_media(client, callback_query):
     user_id = callback_query.from_user.id
     user_data = get_user_data(user_id)
-    status = user_data.get('notif', "off")  # Ambil status saat ini
+    status = user_data.get('hide', "off")  # Ambil status saat ini
 
     # Balik status
     if status == "on":
-        update_user_data(user_id, notif="off")  # Media off
+        update_user_data(user_id, hide="off")  # Media off
     else:
-        update_user_data(user_id, notif="on")  # Media on
+        update_user_data(user_id, hide="on")  # Media on
 
     await hide_media_settings(client, callback_query)  # Perbarui tampilan
 
