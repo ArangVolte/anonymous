@@ -188,7 +188,7 @@ async def handle_message(client, message):
     pt = str(partner_data.get('protect'))
 
     try:
-        status = str(partner_data.get('hide') 
+        status = str(partner_data.get('hide'))
 
         if message.photo or message.video:
             if status == "✅":
