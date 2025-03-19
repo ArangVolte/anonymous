@@ -186,8 +186,8 @@ async def handle_message(client, message):
     reply_id = message.reply_to_message.id -1 if message.reply_to_message else None
     partner_data = get_user_data(partner_id)
     if partner_data is not None:
-        pt = partner_data['protect']
-        status = partner_data['hide']
+        pt = partner_data.get('protect', 'False')
+        status = partner_data.get('hide', '❌')
         print(f"{pt} | {status}")
     else:
         pt = "False"
