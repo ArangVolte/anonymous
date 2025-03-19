@@ -175,8 +175,12 @@ async def handle_message(client, message):
     reply_id = message.reply_to_message.id -1 if message.reply_to_message else None
     
     try:
-    	user_data = get_user_data(partner_id)
-        status = str(user_data['hide'])
+        user_data = get_user_data(partner_id)
+
+        if user_data and 'hide' in user_data:
+            status = str(user_data['hide'])
+        else:
+            status = "✅"
         if status == "✅":
             if message.photo or message.video:
                 await app.send_photo(
