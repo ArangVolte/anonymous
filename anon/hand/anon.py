@@ -201,22 +201,20 @@ async def handle_message(client, message):
                 await app.send_photo(
                     partner_id,
                     photo=img,
-                    protect_content=str_to_bool(pt),
+                    protect_content=strtobool(pt),
                     reply_markup=InlineKeyboardMarkup(
                         [[InlineKeyboardButton("Lihat", callback_data=f"lihat {user_id}|{message.id}")]]
                     ),
                     reply_to_message_id=reply_id
                 )
             else:
-                await message.copy(
-                    partner_id,
-                    protect_content=str_to_bool(pt)),
-                    reply_to_message_id=reply_id
-                )
+                await message.copy(partner_id,
+                    protect_content=strtobool(pt),
+                    reply_to_message_id=reply_id)
         else:
             await message.copy(
                 partner_id,
-                protect_content=str_to_bool(pt)),
+                protect_content=strtobool(pt),
                 reply_to_message_id=reply_id
             )
     except Exception as e:
