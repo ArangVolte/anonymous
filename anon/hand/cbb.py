@@ -102,15 +102,14 @@ async def show_age_page(client, callback_query, page):
         age_text = "Belum diatur"
     
     # Hitung range angka untuk halaman ini
-    start = 9 + (page - 1) * 100
-    end = min(start + 100, 100)  # Maksimal sampai 99
+    start = 9 + (page - 1) * 25
+    end = min(start + 25, 100)  # Maksimal sampai 99
 
-    # Buat grid 10x10
     keyboard = []
-    for row in range(0, 100, 5):
+    for row in range(0, 25, 5):
         row_buttons = [
             InlineKeyboardButton(str(start + i), callback_data=f"update_age_{start + i}")
-            for i in range(row, min(row + 5, 100 - start))
+            for i in range(row, min(row + 5, end - start))
         ]
         keyboard.append(row_buttons)
     
