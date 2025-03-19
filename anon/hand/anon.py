@@ -3,12 +3,22 @@ import asyncio
 from pyrogram import filters
 from pyrogram.errors import FloodWait, UserIsBlocked, InputUserDeactivated
 from pyrogram.types import InputMediaPhoto, InputMediaVideo, InlineKeyboardMarkup, InlineKeyboardButton, BotCommand
-from distutils.util import strtobool
 from anon.config import *
 from anon.data.data import *
 from anon import app
 
+def strtobool(value):
+    value = value.lower()
+    if value in ('True', 'true'):
+        return True
+    elif value in ('False', 'false'):
+        return False
+    else:
+        raise ValueError(f"Invalid boolean value: {value}")
 
+# Contoh penggunaan
+print(strtobool("true"))  # Output: 1
+print(strtobool("false")) # Output: 0
 
 # Handler perintah /start
 @app.on_message(filters.command("start"))
