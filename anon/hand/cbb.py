@@ -202,3 +202,10 @@ async def back_to_main(client, callback_query):
         ]
     )
     await callback_query.edit_message_text("Pilih pengaturan yang ingin Anda ubah:\n\n**Catatan:** Anda hanya akan dicocokkan dengan pengguna yang menggunakan bahasa yang sama.", reply_markup=keyboard)
+    
+
+@app.on_callback_query()
+async def handle_feedback(client, callback_query):
+    if callback_query.data in ["like", "dislike"]:
+        await callback_query.answer("Terima kasih atas umpan baliknya!")
+        await callback_query.message.edit_reply_markup(reply_markup=None)

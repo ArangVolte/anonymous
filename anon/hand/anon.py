@@ -72,12 +72,23 @@ async def start_chat(client, message):
 async def stop_chat(client, message):
     user_id = str(message.from_user.id)
     user_data = db.search(User.user_id == user_id)
+    
+    msg = "Jika Anda ingin, berikan umpan balik tentang pasangan Anda. Ini akan membantu kami menemukan pasangan yang lebih baik untuk Anda di masa depan.",
+    key=InlineKeyboardMarkup(
+        [
+            [InlineKeyboardButton("👍", callback_data="like"),
+            InlineKeyboardButton("👎", callback_data="dislike")]
+         ]
+        )
+
 
     if user_data:
         partner_id = user_data[0].get('partner_id')
         if partner_id and partner_id != "waiting":
             await message.reply_text(MESSAGES["stop_message"])
+            await message.reply(msg, reply_markup=key)
             await app.send_message(partner_id, MESSAGES["partner_stop_message"])
+            await app.send_message(partner_id, msg, reply_markup=key)
             await stop_chat_session(user_id)
         else:
             await message.reply_text(MESSAGES["no_chat_message"])
