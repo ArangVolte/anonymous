@@ -111,7 +111,6 @@ async def remove_age(client, callback_query):
     update_user_data(user_id, age=None)
     await callback_query.answer("Usia Anda telah dihapus", show_alert=True)
     await age_settings(client, callback_query)
-    )
     
 
 # Handler untuk menyembunyikan media
