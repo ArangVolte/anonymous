@@ -249,7 +249,7 @@ async def handle_message(client, message):
     try:
         if message.photo or message.video:
         	if status == "✅":
-                await app.send_photo(
+        		await app.send_photo(
                     partner_id,
                     photo=img,
                     protect_content=bool(strtobool(pt)),
