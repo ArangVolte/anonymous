@@ -78,8 +78,9 @@ async def remove_gender(client, callback_query):
     await callback_query.answer("Jenis kelamin Anda telah dihapus", show_alert=True)
     await gender_settings(client, callback_query)
 
+    return {"age": 25}  # Contoh data pengguna
 
-
+# age
 @app.on_callback_query(filters.regex("^age$"))
 async def age_settings(client, callback_query):
     user_id = callback_query.from_user.id
@@ -89,58 +90,61 @@ async def age_settings(client, callback_query):
     else:
         age_text = "Belum diatur"
     
-    # Membuat tombol angka dari 9 hingga 99 dengan fitur "Next" dan "Prev"
-    keyboard = InlineKeyboardMarkup(
-        [
-            [InlineKeyboardButton(str(i), callback_data=f"update_age_{i}") for i in range(9, 19)],
-            [InlineKeyboardButton("Next →", callback_data="next_page_2")],
-            [InlineKeyboardButton("❌ Hapus Usia", callback_data="remove_age")],
-            [InlineKeyboardButton("← Kembali", callback_data="back_to_main")]
+    # Tampilkan halaman pertama
+    await show_age_page(client, callback_query, page=1)
+
+async def show_age_page(client, callback_query, page):
+    user_id = callback_query.from_user.id
+    user_data = get_user_data(user_id)
+    if user_data and user_data.get('age'):
+        age_text = str(user_data['age'])
+    else:
+        age_text = "Belum diatur"
+    
+    # Hitung range angka untuk halaman ini
+    start = 9 + (page - 1) * 100
+    end = min(start + 100, 100)  # Maksimal sampai 99
+
+    # Buat grid 10x10
+    keyboard = []
+    for row in range(0, 100, 10):
+        row_buttons = [
+            InlineKeyboardButton(str(start + i), callback_data=f"update_age_{start + i}")
+            for i in range(row, min(row + 10, 100 - start))
         ]
-    )
+        keyboard.append(row_buttons)
+    
+    # Tambahkan tombol navigasi
+    navigation_buttons = []
+    if page > 1:
+        navigation_buttons.append(InlineKeyboardButton("← Prev", callback_data=f"prev_page_{page-1}"))
+    if end < 100:
+        navigation_buttons.append(InlineKeyboardButton("Next →", callback_data=f"next_page_{page+1}"))
+    
+    if navigation_buttons:
+        keyboard.append(navigation_buttons)
+    
+    # Tambahkan tombol "Hapus Usia" dan "Kembali"
+    keyboard.append([InlineKeyboardButton("❌ Hapus Usia", callback_data="remove_age")])
+    keyboard.append([InlineKeyboardButton("← Kembali", callback_data="back_to_main")])
+
     await callback_query.edit_message_text(
         f"Masukkan usia Anda, Usia anda saat ini: **{age_text}**\n"
         "dan itu akan membantu kami menemukan pasangan yang lebih cocok.\n\n"
         "Masukkan angka antara 9 dan 99. Misalnya, kirimkan kami 18 jika Anda berusia 18 tahun.\n\n"
         "Anda selalu dapat mengubah usia Anda di /settings.",
-        reply_markup=keyboard
+        reply_markup=InlineKeyboardMarkup(keyboard)
     )
 
 @app.on_callback_query(filters.regex("^next_page_(\d+)$"))
 async def next_page(client, callback_query):
     page = int(callback_query.matches[0].group(1))
-    start = 9 + (page - 1) * 10
-    end = start + 10
-    
-    keyboard = InlineKeyboardMarkup(
-        [
-            [InlineKeyboardButton(str(i), callback_data=f"update_age_{i}") for i in range(start, end)],
-            [InlineKeyboardButton("← Prev", callback_data=f"prev_page_{page-1}") if page > 1 else None,
-            [InlineKeyboardButton("Next →", callback_data=f"next_page_{page+1}")],
-            [InlineKeyboardButton("❌ Hapus Usia", callback_data="remove_age")],
-            [InlineKeyboardButton("← Kembali", callback_data="back_to_main")]
-        ]
-        ]
-    )
-    await callback_query.edit_message_reply_markup(reply_markup=keyboard)
+    await show_age_page(client, callback_query, page)
 
 @app.on_callback_query(filters.regex("^prev_page_(\d+)$"))
 async def prev_page(client, callback_query):
     page = int(callback_query.matches[0].group(1))
-    start = 9 + (page - 1) * 10
-    end = start + 10
-    
-    keyboard = InlineKeyboardMarkup(
-        [
-            [InlineKeyboardButton(str(i), callback_data=f"update_age_{i}") for i in range(start, end)],
-            [InlineKeyboardButton("← Prev", callback_data=f"prev_page_{page-1}") if page > 1 else None,
-            [InlineKeyboardButton("Next →", callback_data=f"next_page_{page+1}")],
-            [InlineKeyboardButton("❌ Hapus Usia", callback_data="remove_age")],
-            [InlineKeyboardButton("← Kembali", callback_data="back_to_main")]
-        ]
-        ]
-    )
-    await callback_query.edit_message_reply_markup(reply_markup=keyboard)
+    await show_age_page(client, callback_query, page)
 
 @app.on_callback_query(filters.regex("^update_age_(\d+)$"))
 async def update_age(client, callback_query):
@@ -161,8 +165,8 @@ async def remove_age(client, callback_query):
     update_user_data(user_id, age=None)  # Hapus usia
     await callback_query.answer("Usia Anda telah dihapus", show_alert=True)
     await age_settings(client, callback_query)  
-    
-
+  
+  
 # Handler untuk menyembunyikan media
 @app.on_callback_query(filters.regex("^hide_media$"))
 async def hide_media_settings(client, callback_query):
