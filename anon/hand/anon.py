@@ -166,26 +166,28 @@ Unsuccessful: <code>{unsuccessful}</code></b>"""
         msg = await message.reply("Silahkan balas ke pesan")
         await asyncio.sleep(8)
         await msg.delete()
-        
+
+
 @app.on_message(filters.private & ~filters.command(["next", "stop", "start", "help", "cast", "status", "settings"]))
 async def handle_message(client, message):
     user_id = str(message.from_user.id)
-    user_data = db.search(User.user_id == user_id)
+    user_data = userdb.get(User.user_id == user_id)
 
-    if not user_data or user_data[0].get('partner_id') == "waiting":
-        await message.reply_text(MESSAGES["no_chat_message"])
+    if not user_data or user_data.get('partner_id') == "waiting":
+        await message.reply_text("Anda belum memiliki pasangan chat.")
         return
 
-    partner_id = user_data[0].get('partner_id')
+    partner_id = user_data.get('partner_id')
     if partner_id == user_id:
-        await message.reply_text(MESSAGES["error_message"])
+        await message.reply_text("Anda tidak dapat mengirim pesan ke diri sendiri.")
         return
 
     reply_id = message.reply_to_message.id - 1 if message.reply_to_message else None
     data = get_user_data(partner_id)
-    if data('protect') and data('hide'):
-        pt = str(data['protect'])
-        status = str(data['hide'])
+    
+    if data:
+        pt = str(data.get('protect', "True"))
+        status = str(data.get('hide', "✅"))
         print(f"{pt} | {status}")
     else:
         pt = "True"
@@ -199,7 +201,7 @@ async def handle_message(client, message):
                 await app.send_photo(
                     partner_id,
                     photo=img,
-                    protect_content=bool(strtobool(pt)),
+                    protect_content=str_to_bool(pt),
                     reply_markup=InlineKeyboardMarkup(
                         [[InlineKeyboardButton("Lihat", callback_data=f"lihat {user_id}|{message.id}")]]
                     ),
@@ -208,19 +210,20 @@ async def handle_message(client, message):
             else:
                 await message.copy(
                     partner_id,
-                    protect_content=bool(strtobool(pt)),
+                    protect_content=str_to_bool(pt)),
                     reply_to_message_id=reply_id
                 )
         else:
             await message.copy(
                 partner_id,
-                protect_content=bool(strtobool(pt)),
+                protect_content=str_to_bool(pt)),
                 reply_to_message_id=reply_id
             )
     except Exception as e:
         print(f"Gagal mengirim pesan/media: {e}")
         await message.reply_text(MESSAGES["block_message"])
         await stop_chat_session(user_id)
+
         
 # Handler untuk perintah /settings
 @app.on_message(filters.private & filters.command("settings"))
