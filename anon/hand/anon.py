@@ -168,23 +168,23 @@ Unsuccessful: <code>{unsuccessful}</code></b>"""
         await msg.delete()
 
 
+
 @app.on_message(filters.private & ~filters.command(["next", "stop", "start", "help", "cast", "status", "settings"]))
 async def handle_message(client, message):
     user_id = str(message.from_user.id)
-    user_data = userdb.get(User.user_id == user_id)
+    user_data = db.search(User.user_id == user_id)
 
-    if not user_data or user_data.get('partner_id') == "waiting":
-        await message.reply_text("Anda belum memiliki pasangan chat.")
+    if not user_data or user_data[0].get('partner_id') == "waiting":
+        await message.reply_text(MESSAGES["no_chat_message"])
         return
 
-    partner_id = user_data.get('partner_id')
+    partner_id = user_data[0].get('partner_id')
     if partner_id == user_id:
-        await message.reply_text("Anda tidak dapat mengirim pesan ke diri sendiri.")
+        await message.reply_text(MESSAGES["error_message"])
         return
 
-    reply_id = message.reply_to_message.id - 1 if message.reply_to_message else None
+    reply_id = message.reply_to_message.id -1 if message.reply_to_message else None
     data = get_user_data(partner_id)
-    
     if data:
         pt = str(data.get('protect', "True"))
         status = str(data.get('hide', "✅"))
@@ -194,7 +194,7 @@ async def handle_message(client, message):
         status = "✅"
     
     img = "https://akcdn.detik.net.id/community/media/visual/2022/11/18/simbol-bahan-kimia-5.jpeg?w=861"
-    
+
     try:
         if message.photo or message.video:
             if status == "✅":
@@ -208,9 +208,11 @@ async def handle_message(client, message):
                     reply_to_message_id=reply_id
                 )
             else:
-                await message.copy(partner_id,
+                await message.copy(
+                    partner_id,
                     protect_content=strtobool(pt),
-                    reply_to_message_id=reply_id)
+                    reply_to_message_id=reply_id
+                )
         else:
             await message.copy(
                 partner_id,
@@ -220,8 +222,8 @@ async def handle_message(client, message):
     except Exception as e:
         print(f"Gagal mengirim pesan/media: {e}")
         await message.reply_text(MESSAGES["block_message"])
-        await stop_chat_session(user_id)
-
+        await stop_chat_session(user_id)  
+        
         
 # Handler untuk perintah /settings
 @app.on_message(filters.private & filters.command("settings"))
