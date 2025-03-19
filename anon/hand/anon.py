@@ -175,8 +175,8 @@ async def handle_message(client, message):
 
     reply_id = message.reply_to_message.id -1 if message.reply_to_message else None
     prot = get_user_data(partner_id)
-    if user_data and 'protect' in user_data:
-        pt = str(user_data['protect'])
+    if prot and 'protect' in prot:
+        pt = str(prot['protect'])
     else:
     	pt = "True"
     try:
