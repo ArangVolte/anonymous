@@ -62,11 +62,11 @@ async def set_gender(client, callback_query):
     user_id = callback_query.from_user.id
     xx = callback_query.data
     if xx == "male":
-    	gender = "Laki-laki"
-    	await callback_query.answer("Anda memilih Laki-laki")
+        gender = "Laki-laki"
+        await callback_query.answer("Anda memilih Laki-laki")
     elif xx == "female":
-    	gender = "Perempuan"
-    	await callback_query.answer("Anda memilih Perempuan")
+        gender = "Perempuan"
+        await callback_query.answer("Anda memilih Perempuan")
     update_user_data(user_id, gender=gender)
     await callback_query.answer(f"Jenis kelamin Anda telah diatur menjadi {gender}", show_alert=True)
     await gender_settings(client, callback_query)
@@ -187,39 +187,17 @@ async def hide_media_settings(client, callback_query):
 @app.on_callback_query(filters.regex("^toggle_hide_media$"))
 async def toggle_hide_media(client, callback_query):
     user_id = callback_query.from_user.id
-    status = user_data.get(user_id, "❌")  # Ambil status saat ini
+    user_data = get_user_data(user_id)
+    status = user_data.get('notif', "❌")  # Ambil status saat ini
 
     # Balik status
     if status == "✅":
-        update_user_data(user_id, "❌")  # Media off
+        update_user_data(user_id, notif="❌")  # Media off
     else:
-        update_user_data(user_id, "✅")  # Media on
+        update_user_data(user_id, notif="✅")  # Media on
 
     await hide_media_settings(client, callback_query)  # Perbarui tampilan
 
-@app.on_callback_query(filters.regex("^back_to_main$"))
-async def back_to_main(client, callback_query):
-    keyboard = InlineKeyboardMarkup([[InlineKeyboardButton("Pengaturan Sembunyikan Media", callback_data="hide_media")]])
-    await callback_query.edit_message_text("Menu Utama", reply_markup=keyboard)
-
-
-# Handler untuk bahasa
-@app.on_callback_query(filters.regex("^language$"))
-async def language_settings(client, callback_query):
-    keyboard = InlineKeyboardMarkup(
-        [
-            [InlineKeyboardButton("🇬🇧 English", callback_data="lang_en"),
-            InlineKeyboardButton("🇮🇩Indonesia", callback_data="lang_id"),
-            InlineKeyboardButton("🇮🇹 Italian", callback_data="lang_it")],
-            [InlineKeyboardButton("🇪🇸 Spanish", callback_data="lang_es"),
-            InlineKeyboardButton("🇹🇷 Turkish", callback_data="lang_tr"),
-            InlineKeyboardButton("🇰🇷 Korean", callback_data="lang_ko")],
-            [InlineKeyboardButton("← Kembali", callback_data="back_to_main")]
-        ]
-    )
-    await callback_query.edit_message_text("Atur bahasa Anda.\n\n**Catatan:** Anda hanya akan dicocokkan dengan pengguna yang menggunakan bahasa yang sama.", reply_markup=keyboard)
-
-# Handler untuk kembali ke menu utama
 @app.on_callback_query(filters.regex("^back_to_main$"))
 async def back_to_main(client, callback_query):
     keyboard = InlineKeyboardMarkup(
@@ -239,3 +217,20 @@ async def handle_feedback(client, callback_query):
         await callback_query.answer("Terima kasih atas umpan baliknya!")
         await callback_query.message.edit_reply_markup(reply_markup=None)
         await callback_query.edit_message_text("Terima kasih atas umpan baliknya!")
+
+# Handler untuk bahasa
+@app.on_callback_query(filters.regex("^language$"))
+async def language_settings(client, callback_query):
+    keyboard = InlineKeyboardMarkup(
+        [
+            [InlineKeyboardButton("🇬🇧 English", callback_data="lang_en"),
+            InlineKeyboardButton("🇮🇩Indonesia", callback_data="lang_id"),
+            InlineKeyboardButton("🇮🇹 Italian", callback_data="lang_it")],
+            [InlineKeyboardButton("🇪🇸 Spanish", callback_data="lang_es"),
+            InlineKeyboardButton("🇹🇷 Turkish", callback_data="lang_tr"),
+            InlineKeyboardButton("🇰🇷 Korean", callback_data="lang_ko")],
+            [InlineKeyboardButton("← Kembali", callback_data="back_to_main")]
+        ]
+    )
+    await callback_query.edit_message_text("Atur bahasa Anda.\n\n**Catatan:** Anda hanya akan dicocokkan dengan pengguna yang menggunakan bahasa yang sama.", reply_markup=keyboard)
+
