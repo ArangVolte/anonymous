@@ -202,3 +202,14 @@ async def back_to_main(client, callback_query):
         ]
     )
     await callback_query.edit_message_text("Pilih pengaturan yang ingin Anda ubah:\n\n**Catatan:** Anda hanya akan dicocokkan dengan pengguna yang menggunakan bahasa yang sama.", reply_markup=keyboard)
+    
+@app.on_callback_query()
+async def lang_callback(client, callback_query):
+    user_id = callback_query.from_user.id
+    data = callback_query.data
+
+    if data.startswith("lang_"):
+        lang = data.split("_")[1]
+        update_user_data(user_id, lang=lang)
+        await callback_query.answer(f"Bahasa telah diubah ke {lang}.")
+        await callback_query.message.edit_text("Bahasa Anda telah diatur ke 🇮🇩 Indonesian Anda hanya akan dipasangkan dengan pengguna yang berbicara 🇮🇩 Indonesian")
