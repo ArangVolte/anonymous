@@ -1,14 +1,12 @@
 # anon.py
 import asyncio
-from pyrogram import Client, filters
+from pyrogram import filters
 from pyrogram.errors import FloodWait, UserIsBlocked, InputUserDeactivated
 from pyrogram.types import InputMediaPhoto, InputMediaVideo, InlineKeyboardMarkup, InlineKeyboardButton, BotCommand
-from config import ADMIN, MESSAGES, API_ID, API_HASH, BOT_TOKEN
+from .config import *
 from data import *
-from cbb import *
 
 
-app = Client("anonim_chatbot", api_id=API_ID, api_hash=API_HASH, bot_token=BOT_TOKEN)
 
 # Handler perintah /start
 @app.on_message(filters.command("start"))
