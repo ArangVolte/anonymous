@@ -184,39 +184,31 @@ async def handle_message(client, message):
         return
 
     reply_id = message.reply_to_message.id -1 if message.reply_to_message else None
-    data = get_user_data(partner_id)
-    if data:
-        pt = str(data.get('protect', "True"))
-        status = str(data.get('hide', "✅"))
-        print(f"{pt} | {status}")
-    else:
-        pt = "True"
-        status = "✅"
+    #data = get_user_data(partner_id)
+    #if data:
+       # pt = str(data.get('protect', "True"))
+        #status = str(data.get('hide', "✅"))
+       # print(f"{pt} | {status}")
+   # else:
+        #pt = "True"
+       # status = "✅"
     
     img = "https://akcdn.detik.net.id/community/media/visual/2022/11/18/simbol-bahan-kimia-5.jpeg?w=861"
 
     try:
         if message.photo or message.video:
-            if status == "✅":
-                await app.send_photo(
-                    partner_id,
-                    photo=img,
-                    protect_content=strtobool(pt),
-                    reply_markup=InlineKeyboardMarkup(
+            await app.send_photo(
+                partner_id,
+                photo=img,
+                reply_markup=InlineKeyboardMarkup(
                         [[InlineKeyboardButton("Lihat", callback_data=f"lihat {user_id}|{message.id}")]]
                     ),
                     reply_to_message_id=reply_id
                 )
-            else:
-                await message.copy(
-                    partner_id,
-                    protect_content=strtobool(pt),
-                    reply_to_message_id=reply_id
-                )
+            
         else:
             await message.copy(
                 partner_id,
-                protect_content=strtobool(pt),
                 reply_to_message_id=reply_id
             )
     except Exception as e:
