@@ -174,43 +174,40 @@ async def handle_message(client, message):
         return
 
     reply_id = message.reply_to_message.id -1 if message.reply_to_message else None
-    prot = get_user_data(partner_id)
-    if prot and 'protect' in prot:
-        pt = str(prot['protect'])
-    else:
-    	pt = "True"
-    try:
-        user_data = get_user_data(partner_id)
+    partner_data = get_user_data(partner_id)
+    pt = str(partner_data.get('protect', "True"))  # Default to "True" if 'protect' not found
 
-        if user_data and 'hide' in user_data:
-            status = str(user_data['hide'])
-        else:
-            status = "✅"
+    try:
+        status = str(partner_data.get('hide', "✅"))  # Default to "✅" if 'hide' not found
+
         if message.photo or message.video:
-        	if status == "✅":
-        		await app.send_photo(
-                partner_id,
-                photo="https://akcdn.detik.net.id/community/media/visual/2022/11/18/simbol-bahan-kimia-5.jpeg?w=861",
-                protect_content=strtobool(pt),
-                reply_markup=InlineKeyboardMarkup(
-                    [[InlineKeyboardButton("Lihat", callback_data=f"lihat {user_id}|{message.id}")]]
-                ),
-                reply_to_message_id=reply_id
+            if status == "✅":
+                await app.send_photo(
+                    partner_id,
+                    photo="https://akcdn.detik.net.id/community/media/visual/2022/11/18/simbol-bahan-kimia-5.jpeg?w=861",
+                    protect_content=strtobool(pt),
+                    reply_markup=InlineKeyboardMarkup(
+                        [[InlineKeyboardButton("Lihat", callback_data=f"lihat {user_id}|{message.id}")]]
+                    ),
+                    reply_to_message_id=reply_id
                 )
             else:
-            	await message.copy(
-            		partner_id,
-            		protect_content=strtobool(pt),
-            		reply_to_message_id=reply_id)
+                await message.copy(
+                    partner_id,
+                    protect_content=strtobool(pt),
+                    reply_to_message_id=reply_id
+                )
         else:
             await message.copy(
-            	partner_id,
-            	protect_content=strtobool(pt),
-            	reply_to_message_id=reply_id)
+                partner_id,
+                protect_content=strtobool(pt),
+                reply_to_message_id=reply_id
+            )
     except Exception as e:
         print(f"Gagal mengirim pesan/media: {e}")
         await message.reply_text(MESSAGES["block_message"])
         await stop_chat_session(user_id)
+        
         
 # Handler untuk perintah /start
 @app.on_message(filters.private & filters.command("settings"))
