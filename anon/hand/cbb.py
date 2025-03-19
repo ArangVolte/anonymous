@@ -59,8 +59,13 @@ async def gender_settings(client, callback_query):
 @app.on_callback_query(filters.regex("^male$|^female$"))
 async def set_gender(client, callback_query):
     user_id = callback_query.from_user.id
-    gender = callback_query.data
-    
+    xx = callback_query.data
+    if xx == "male":
+    	gender = "Laki-laki"
+    	await callback_query.answer("Anda memilih Laki-laki")
+    elif xx == "female":
+    	gender = "Perempuan"
+    	await callback_query.answer("Anda memilih Perempuan")
     update_user_data(user_id, gender=gender)
     await callback_query.answer(f"Jenis kelamin Anda telah diatur menjadi {gender}", show_alert=True)
     await gender_settings(client, callback_query)
@@ -73,7 +78,8 @@ async def remove_gender(client, callback_query):
     await callback_query.answer("Jenis kelamin Anda telah dihapus", show_alert=True)
     await gender_settings(client, callback_query)
 
-# Handler untuk usia
+
+
 @app.on_callback_query(filters.regex("^age$"))
 async def age_settings(client, callback_query):
     user_id = callback_query.from_user.id
@@ -83,34 +89,76 @@ async def age_settings(client, callback_query):
     else:
         age_text = "Belum diatur"
     
+    # Membuat tombol angka dari 9 hingga 99 dengan fitur "Next" dan "Prev"
     keyboard = InlineKeyboardMarkup(
         [
+            [InlineKeyboardButton(str(i), callback_data=f"update_age_{i}") for i in range(9, 19)],
+            [InlineKeyboardButton("Next →", callback_data="next_page_2")],
             [InlineKeyboardButton("❌ Hapus Usia", callback_data="remove_age")],
             [InlineKeyboardButton("← Kembali", callback_data="back_to_main")]
         ]
     )
-    await callback_query.edit_message_text(f"Masukkan usia Anda, Usia anda saat ini: **{age_text}**\ndan itu akan membantu kami menemukan pasangan yang lebih cocok.\n\nMasukkan angka antara 9 dan 99. Misalnya, kirimkan kami 18 jika Anda berusia 18 tahun.\n\nAnda selalu dapat mengubah usia Anda di /settings.", reply_markup=keyboard)
+    await callback_query.edit_message_text(
+        f"Masukkan usia Anda, Usia anda saat ini: **{age_text}**\n"
+        "dan itu akan membantu kami menemukan pasangan yang lebih cocok.\n\n"
+        "Masukkan angka antara 9 dan 99. Misalnya, kirimkan kami 18 jika Anda berusia 18 tahun.\n\n"
+        "Anda selalu dapat mengubah usia Anda di /settings.",
+        reply_markup=keyboard
+    )
 
-@app.on_message(filters.text & filters.private)
-async def set_age(client, message):
-    user_id = message.from_user.id
-    try:
-        age = int(message.text)
-        if 9 <= age <= 99:
-            update_user_data(user_id, age=age)
-            await message.reply(f"Usia Anda telah diatur menjadi {age}")
-        else:
-            await message.reply("Usia harus antara 9 dan 99.")
-    except ValueError:
-        await message.reply("Masukkan usia yang valid (angka antara 9 dan 99).")
+@app.on_callback_query(filters.regex("^next_page_(\d+)$"))
+async def next_page(client, callback_query):
+    page = int(callback_query.matches[0].group(1))
+    start = 9 + (page - 1) * 10
+    end = start + 10
+    
+    keyboard = InlineKeyboardMarkup(
+        [
+            [InlineKeyboardButton(str(i), callback_data=f"update_age_{i}") for i in range(start, end)],
+            [InlineKeyboardButton("← Prev", callback_data=f"prev_page_{page-1}") if page > 1 else None,
+            [InlineKeyboardButton("Next →", callback_data=f"next_page_{page+1}")],
+            [InlineKeyboardButton("❌ Hapus Usia", callback_data="remove_age")],
+            [InlineKeyboardButton("← Kembali", callback_data="back_to_main")]
+        ]
+    )
+    await callback_query.edit_message_reply_markup(reply_markup=keyboard)
+
+@app.on_callback_query(filters.regex("^prev_page_(\d+)$"))
+async def prev_page(client, callback_query):
+    page = int(callback_query.matches[0].group(1))
+    start = 9 + (page - 1) * 10
+    end = start + 10
+    
+    keyboard = InlineKeyboardMarkup(
+        [
+            [InlineKeyboardButton(str(i), callback_data=f"update_age_{i}") for i in range(start, end)],
+            [InlineKeyboardButton("← Prev", callback_data=f"prev_page_{page-1}") if page > 1 else None,
+            [InlineKeyboardButton("Next →", callback_data=f"next_page_{page+1}")],
+            [InlineKeyboardButton("❌ Hapus Usia", callback_data="remove_age")],
+            [InlineKeyboardButton("← Kembali", callback_data="back_to_main")]
+        ]
+    )
+    await callback_query.edit_message_reply_markup(reply_markup=keyboard)
+
+@app.on_callback_query(filters.regex("^update_age_(\d+)$"))
+async def update_age(client, callback_query):
+    user_id = callback_query.from_user.id
+    age = int(callback_query.matches[0].group(1))
+    
+    if 9 <= age <= 99:
+        update_user_data(user_id, age=age)  # Langsung update usia
+        await callback_query.answer(f"Usia Anda telah diatur menjadi {age}", show_alert=True)
+        await age_settings(client, callback_query)  # Refresh tampilan
+    else:
+        await callback_query.answer("Usia harus antara 9 dan 99.", show_alert=True)
 
 @app.on_callback_query(filters.regex("^remove_age$"))
 async def remove_age(client, callback_query):
     user_id = callback_query.from_user.id
     
-    update_user_data(user_id, age=None)
+    update_user_data(user_id, age=None)  # Hapus usia
     await callback_query.answer("Usia Anda telah dihapus", show_alert=True)
-    await age_settings(client, callback_query)
+    await age_settings(client, callback_query)  
     
 
 # Handler untuk menyembunyikan media

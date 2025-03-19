@@ -33,12 +33,6 @@ async def stop_chat_session(user_id):
             db.remove(User.user_id == partner_id)
             
 
-from tinydb import TinyDB, Query
-
-# Inisialisasi database
-db = TinyDB('user_db.json')
-userdb = db.table('info')
-
 # Fungsi untuk menambahkan atau memperbarui data pengguna
 def update_user_data(user_id, gender=None, age=None, hide=None, lang=None):
     user_data = userdb.get(User.user_id == user_id)
