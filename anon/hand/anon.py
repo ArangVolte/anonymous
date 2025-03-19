@@ -236,7 +236,7 @@ async def handle_message(client, message):
         await message.reply_text(MESSAGES["error_message"])
         return
 
-    reply_id = message.reply_to_message.id if message.reply_to_message else None
+    reply_id = message.reply_to_message.id -1 if message.reply_to_message else None
     data = get_user_data(partner_id)
     if data.get('protect') and data.get('hide'):
         pt = str(data['protect'])
@@ -260,9 +260,9 @@ async def handle_message(client, message):
                 )
             else:
             	await message.copy(
-                partner_id,
-                protect_content=bool(strtobool(pt)),
-                reply_to_message_id=reply_id
+            		partner_id,
+            		protect_content=bool(strtobool(pt)),
+            		reply_to_message_id=reply_id
                 )
        
         else:
