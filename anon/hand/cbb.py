@@ -73,12 +73,9 @@ async def set_gender(client, callback_query):
 @app.on_callback_query(filters.regex("^remove_gender$"))
 async def remove_gender(client, callback_query):
     user_id = callback_query.from_user.id
-    
-    update_user_data(user_id, gender=None)
+    update_user_data(user_id, gender="Tidak Diketahui")
     await callback_query.answer("Jenis kelamin Anda telah dihapus", show_alert=True)
     await gender_settings(client, callback_query)
-
-    return {"age": 25}  # Contoh data pengguna
 
 # age
 @app.on_callback_query(filters.regex("^age$"))
@@ -161,7 +158,7 @@ async def update_age(client, callback_query):
 async def remove_age(client, callback_query):
     user_id = callback_query.from_user.id
     
-    update_user_data(user_id, age=None)  # Hapus usia
+    update_user_data(user_id, age="Belum Diatur")  # Hapus usia
     await callback_query.answer("Usia Anda telah dihapus", show_alert=True)
     await age_settings(client, callback_query)  
   
