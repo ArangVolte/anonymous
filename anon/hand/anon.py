@@ -187,7 +187,7 @@ async def handle_message(client, message):
         else:
             status = "✅"
         if message.photo or message.video:
-        	if status == "✅"
+        	if status == "✅":
                 await app.send_photo(
                 partner_id,
                 photo="https://akcdn.detik.net.id/community/media/visual/2022/11/18/simbol-bahan-kimia-5.jpeg?w=861",
