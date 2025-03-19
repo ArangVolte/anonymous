@@ -188,9 +188,10 @@ async def handle_message(client, message):
     if partner_data is not None:
         pt = partner_data['protect']
         status = partner_data['hide']
+        print(f"{pt} | {status}")
     else:
-        pt = "True"
-        status = "✅"
+        pt = "False"
+        status = "❌"
 
     try:
         if message.photo or message.video:
