@@ -2,7 +2,7 @@
 from pyrogram import Client, filters
 from pyrogram.types import InputMediaPhoto, InputMediaVideo, InlineKeyboardMarkup, InlineKeyboardButton
 from anon.config import MESSAGES
-from data import *
+from data.data import *
 from anon import app
 
 # Handler untuk callback query (tombol "Lihat")
