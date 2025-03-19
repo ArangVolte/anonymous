@@ -201,7 +201,7 @@ async def start(client, message):
             [InlineKeyboardButton("👨 Jenis Kelamin ️👩", callback_data="gender")],
             [InlineKeyboardButton("📆 Usia", callback_data="age")],
             [InlineKeyboardButton("🎞 Sembunyikan foto/video", callback_data="hide_media")],
-            [InlineKeyboardButton("🌍 Bahasa", callback_data="language")]
+            [InlineKeyboardButton("🌍 Bahasa", callback_data="bahasa")]
         ]
     )
     await message.reply_text("Pilih pengaturan yang ingin Anda ubah:\n\n**Catatan:** Anda hanya akan dicocokkan dengan pengguna yang menggunakan bahasa yang sama.", reply_markup=keyboard)

@@ -207,7 +207,7 @@ async def back_to_main(client, callback_query):
             [InlineKeyboardButton("👨 Jenis Kelamin ️👩", callback_data="gender")],
             [InlineKeyboardButton("📆 Usia", callback_data="age")],
             [InlineKeyboardButton("🎞 Sembunyikan foto/video", callback_data="hide_media")],
-            [InlineKeyboardButton("🌍 Bahasa", callback_data="language")]
+            [InlineKeyboardButton("🌍 Bahasa", callback_data="bahasa")]
         ]
     )
     await callback_query.edit_message_text("Pilih pengaturan yang ingin Anda ubah:\n\n**Catatan:** Anda hanya akan dicocokkan dengan pengguna yang menggunakan bahasa yang sama.", reply_markup=keyboard)
@@ -221,7 +221,7 @@ async def handle_feedback(client, callback_query):
         await callback_query.edit_message_text("Terima kasih atas umpan baliknya!")
 
 # Handler untuk bahasa
-@app.on_callback_query(filters.regex("^language$"))
+@app.on_callback_query(filters.regex("^bahasa$"))
 async def language_settings(client, callback_query):
     keyboard = InlineKeyboardMarkup(
         [
