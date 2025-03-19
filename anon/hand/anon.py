@@ -4,7 +4,7 @@ from pyrogram import filters
 from pyrogram.errors import FloodWait, UserIsBlocked, InputUserDeactivated
 from pyrogram.types import InputMediaPhoto, InputMediaVideo, InlineKeyboardMarkup, InlineKeyboardButton, BotCommand
 from anon.config import *
-from data.data import *
+from anon.data.data import *
 
 
 
