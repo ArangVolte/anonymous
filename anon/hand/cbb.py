@@ -189,7 +189,7 @@ async def hide_media_settings(client, callback_query):
 async def toggle_hide_media(client, callback_query):
     user_id = callback_query.from_user.id
     user_data = get_user_data(user_id)
-    status = user_data.['hide']  # Ambil status saat ini
+    status = user_data['hide']  # Ambil status saat ini
 
     # Balik status
     if status == "✅":
@@ -224,7 +224,7 @@ async def protect_settings(client, callback_query):
 async def toggle_protect(client, callback_query):
     user_id = callback_query.from_user.id
     user_data = get_user_data(user_id)
-    status = user_data.get('protect', "False")  # Ambil status saat ini
+    status = user_data['protect'] # Ambil status saat ini
 
     # Balik status
     if status == "True":
