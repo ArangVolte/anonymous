@@ -3,7 +3,7 @@ import asyncio
 from pyrogram import filters
 from pyrogram.errors import FloodWait, UserIsBlocked, InputUserDeactivated
 from pyrogram.types import InputMediaPhoto, InputMediaVideo, InlineKeyboardMarkup, InlineKeyboardButton, BotCommand
-from .config import *
+from anon.config import *
 from data import *
 
 

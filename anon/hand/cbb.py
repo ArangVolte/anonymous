@@ -1,7 +1,7 @@
 # cbb.py
 from pyrogram import Client, filters
 from pyrogram.types import InputMediaPhoto, InputMediaVideo, InlineKeyboardMarkup, InlineKeyboardButton
-from .config import MESSAGES
+from anon.config import MESSAGES
 from data import *
 from anon import app
 

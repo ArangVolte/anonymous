@@ -9,7 +9,7 @@ from pyrogram.errors import RPCError
 from anon import app, LOOP
 from anon.hand import ALL_MODULES
 
-from .config import *
+from anon.config import *
 
 msg = """
 🔥 **AnonBot Berhasil Di Aktifkan**
