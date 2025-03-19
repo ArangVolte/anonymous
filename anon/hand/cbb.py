@@ -220,13 +220,12 @@ async def handle_feedback(client, callback_query):
         await callback_query.message.edit_reply_markup(reply_markup=None)
         await callback_query.edit_message_text("Terima kasih atas umpan baliknya!")
 
-# Handler untuk bahasa
 @app.on_callback_query(filters.regex("^bahasa$"))
 async def language_settings(client, callback_query):
     keyboard = InlineKeyboardMarkup(
         [
             [InlineKeyboardButton("🇬🇧 English", callback_data="lang_en"),
-            InlineKeyboardButton("🇮🇩Indonesia", callback_data="lang_id"),
+            InlineKeyboardButton("🇮🇩 Indonesia", callback_data="lang_id"),
             InlineKeyboardButton("🇮🇹 Italian", callback_data="lang_it")],
             [InlineKeyboardButton("🇪🇸 Spanish", callback_data="lang_es"),
             InlineKeyboardButton("🇹🇷 Turkish", callback_data="lang_tr"),
@@ -234,5 +233,7 @@ async def language_settings(client, callback_query):
             [InlineKeyboardButton("← Kembali", callback_data="back_to_main")]
         ]
     )
-    await callback_query.edit_message_text("Atur bahasa Anda.\n\n**Catatan:** Anda hanya akan dicocokkan dengan pengguna yang menggunakan bahasa yang sama.", reply_markup=keyboard)
-
+    await callback_query.edit_message_text(
+        "Atur bahasa Anda.\n\n**Catatan:** Anda hanya akan dicocokkan dengan pengguna yang menggunakan bahasa yang sama.",
+        reply_markup=keyboard
+    )
