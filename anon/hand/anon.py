@@ -5,6 +5,7 @@ from pyrogram.errors import FloodWait, UserIsBlocked, InputUserDeactivated
 from pyrogram.types import InputMediaPhoto, InputMediaVideo, InlineKeyboardMarkup, InlineKeyboardButton, BotCommand
 from anon.config import *
 from anon.data.data import *
+from anon.data.lang import *
 from anon import app
 
 
