@@ -12,7 +12,7 @@ def load_language(lang_code="id"):
     if lang_code in LANG_CACHE:
         return LANG_CACHE[lang_code]
 
-    lang_file = os.path.join("lang", f"{lang}.json")
+    lang_file = os.path.join("lang", f"{lang_code}.json")
     if os.path.exists(lang_file):
         with open(lang_file, "r", encoding="utf-8") as f:
             LANG_CACHE[lang_code] = json.load(f)
