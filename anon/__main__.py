@@ -23,7 +23,7 @@ msg = """
 async def main():
     await app.start()
     try:
-        app.set_bot_commands([
+        await app.set_bot_commands([
             BotCommand("start", "Memulai bot"),
             BotCommand("next", "Mencari pasangan chat"),
             BotCommand("stop", "Menghentikan chat"),
