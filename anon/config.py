@@ -11,9 +11,9 @@ ADMIN = int(getenv("ADMIN", "5401639797"))  # Ganti dengan ID admin Anda
 MESSAGES = {
     "start_message": "Halo! Selamat datang di Anonim Chat Bot.\n\nGunakan /next untuk memulai percakapan anonim.",
     "next_message": "Menunggu pasangan chat...",
-    "stop_message": "Anda menghentikan percakapan.",
-    "partner_connected": "Kalian sudah saling terhubung",
-    "partner_stop_message": "Lawan bicara Anda menghentikan percakapan.",
+    "stop_message": "Anda telah menghentikan obrolan. Mencari pasangan baru",
+    "partner_connected": "Pasangan ditemukan\n\n/next - cari pasangan baru\n/stop - hentikan obrolan",
+    "partner_stop_message": "Pasangan Anda telah menghentikan obrolan tekan /next untuk menemukan pasangan baru",
     "no_chat_message": "Anda belum memulai chat. Gunakan /next untuk memulai.",
     "error_message": "Terjadi kesalahan. Anda tidak dapat mengirim pesan ke diri sendiri.",
     "block_message": "Gagal mengirim pesan. Mungkin pasangan chat telah meninggalkan percakapan.",
