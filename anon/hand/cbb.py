@@ -180,7 +180,7 @@ async def language_settings(client, callback_query):
     keyboard = InlineKeyboardMarkup(
         [
             [InlineKeyboardButton("🇬🇧 English", callback_data="lang_en"),
-            InlineKeyboardButton("🇮🇩Indonesian", callback_data="lang_id"),
+            InlineKeyboardButton("🇮🇩Indonesia", callback_data="lang_id"),
             InlineKeyboardButton("🇮🇹 Italian", callback_data="lang_it")],
             [InlineKeyboardButton("🇪🇸 Spanish", callback_data="lang_es"),
             InlineKeyboardButton("🇹🇷 Turkish", callback_data="lang_tr"),
